@@ -100,18 +100,18 @@
   .setup-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(200,96,42,0.1); }
   .setup-input::placeholder { color: #bbb7b0; }
 
-  /* CC rows in settings — swatch | name | bank | limit | $/pt | pt/mi | cur pts | del */
+  /* CC rows in settings — swatch | name | bank | limit | pt/$ | pt/mi | cur pts | pool | del */
   .cc-rows { display: flex; flex-direction: column; gap: 7px; }
 
   .cc-row {
     display: grid;
-    grid-template-columns: 14px 1.4fr 0.8fr 72px 72px 72px 80px 28px;
+    grid-template-columns: 14px 1.4fr 0.8fr 72px 72px 72px 80px 44px 28px;
     gap: 6px; align-items: center;
   }
 
   .cc-row-header {
     display: grid;
-    grid-template-columns: 14px 1.4fr 0.8fr 72px 72px 72px 80px 28px;
+    grid-template-columns: 14px 1.4fr 0.8fr 72px 72px 72px 80px 44px 28px;
     gap: 6px; align-items: center;
     margin-bottom: 2px;
   }
@@ -119,6 +119,14 @@
   .cc-row-header span {
     font-size: 0.6rem; font-weight: 700; letter-spacing: 0.06em;
     text-transform: uppercase; color: var(--text-muted); line-height: 1.2;
+  }
+
+  .cc-pool-wrap {
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .cc-pool-wrap input[type=checkbox] {
+    width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent);
   }
 
   .cc-swatch { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
@@ -371,7 +379,24 @@
   .pill-gifts         { background: #fce8ea; color: #c42b3a; }
   .pill-misc          { background: var(--surface2); color: var(--text-muted); }
 
-  .cc-miles-divider { border-top: 1px solid var(--border); margin: 8px 0 6px; }
+  .cc-pool-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 0.62rem; font-weight: 600; color: var(--accent);
+    background: var(--accent-light); border: 1px solid #e8a882;
+    border-radius: 10px; padding: 2px 7px; margin-top: 4px;
+  }
+
+  .cc-pool-total {
+    margin-top: 6px; padding-top: 6px;
+    border-top: 1px dashed var(--border);
+  }
+
+  .cc-pool-total-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+
+  .cc-pool-total-label { font-size: 0.63rem; color: var(--text-muted); }
+  .cc-pool-total-value { font-family: var(--font-display); font-size: 0.95rem; color: var(--accent); }
   .cc-miles-row { display: flex; justify-content: space-between; align-items: baseline; }
   .cc-miles-label { font-size: 0.63rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
   .cc-miles-value { font-family: var(--font-display); font-size: 1rem; color: var(--accent); }
@@ -400,13 +425,13 @@
     th, td { padding: 8px 9px; }
     .modal-header, .modal-section { padding-left: 18px; padding-right: 18px; }
     .modal-footer { padding: 14px 18px 20px; }
-    .cc-row, .cc-row-header { grid-template-columns: 14px 1fr 60px 55px 55px 55px 65px 24px; gap: 4px; }
+    .cc-row, .cc-row-header { grid-template-columns: 14px 1fr 60px 55px 55px 55px 65px 36px 24px; gap: 4px; }
   }
 
   @media (max-width: 420px) {
     .form-grid { grid-template-columns: 1fr; }
     .cc-grid { grid-template-columns: 1fr; }
-    .cc-row, .cc-row-header { grid-template-columns: 14px 1fr 55px 50px 50px 26px; }
+    .cc-row, .cc-row-header { grid-template-columns: 14px 1fr 55px 50px 50px 36px 26px; }
     .cc-bank-input, .cc-pts-mi-input { display: none; }
   }
 
@@ -429,19 +454,23 @@
 
     <div class="modal-section" style="margin-top:16px;">
       <div class="modal-section-title">Google Sheets Connection</div>
-      <div class="setup-grid single">
-        <div class="setup-field">
+      <div class="setup-grid">
+        <div class="setup-field full">
           <label class="setup-label">Apps Script Web App URL <span class="req">*</span></label>
           <input class="setup-input" id="ob-scriptUrl" type="text" placeholder="https://script.google.com/macros/s/…/exec">
         </div>
+        <div class="setup-field full">
+          <label class="setup-label">Spreadsheet ID <span class="req">*</span></label>
+          <input class="setup-input" id="ob-sheetId" type="text" placeholder="Paste the ID from your Google Sheet URL">
+        </div>
       </div>
-      <div class="setup-hint" style="margin-top:8px;">Follow the included setup guide to deploy your Google Apps Script and paste the Web App URL above.</div>
+      <div class="setup-hint" style="margin-top:8px;">Follow the included setup guide to deploy your Google Apps Script and paste the Web App URL above. The Spreadsheet ID is the long string in your sheet's URL between /d/ and /edit.</div>
     </div>
 
     <div class="modal-section" style="margin-top:16px;">
       <div class="modal-section-title">Credit Cards — for spending dashboard</div>
       <div class="cc-row-header">
-        <span></span><span>Card name</span><span>Bank</span><span>Limit (SGD)</span><span>pt/$</span><span>pt/mile</span><span>Cur. pts</span><span></span>
+        <span></span><span>Card name</span><span>Bank</span><span>Limit (SGD)</span><span>pt/$</span><span>pt/mile</span><span>Cur. pts</span><span>Pool?</span><span></span>
       </div>
       <div class="cc-rows" id="ob-ccRows"></div>
       <button class="add-cc-btn" id="ob-addCcBtn">+ Add credit card</button>
@@ -462,10 +491,14 @@
 
     <div class="modal-section" style="margin-top:16px;">
       <div class="modal-section-title">Google Sheets Connection</div>
-      <div class="setup-grid single">
-        <div class="setup-field">
+      <div class="setup-grid">
+        <div class="setup-field full">
           <label class="setup-label">Apps Script Web App URL <span class="req">*</span></label>
           <input class="setup-input" id="st-scriptUrl" type="text">
+        </div>
+        <div class="setup-field full">
+          <label class="setup-label">Spreadsheet ID <span class="req">*</span></label>
+          <input class="setup-input" id="st-sheetId" type="text" placeholder="From your Google Sheet URL: /d/  THIS_PART  /edit">
         </div>
       </div>
     </div>
@@ -473,7 +506,7 @@
     <div class="modal-section" style="margin-top:16px;">
       <div class="modal-section-title">Credit Cards</div>
       <div class="cc-row-header">
-        <span></span><span>Card name</span><span>Bank</span><span>Limit (SGD)</span><span>pt/$</span><span>pt/mile</span><span>Cur. pts</span><span></span>
+        <span></span><span>Card name</span><span>Bank</span><span>Limit (SGD)</span><span>pt/$</span><span>pt/mile</span><span>Cur. pts</span><span>Pool?</span><span></span>
       </div>
       <div class="cc-rows" id="st-ccRows"></div>
       <button class="add-cc-btn" id="st-addCcBtn">+ Add credit card</button>
@@ -494,6 +527,7 @@
       <div class="tagline">Shared expense tracker · syncs to Google Sheets</div>
     </div>
     <button class="settings-btn" id="openSettingsBtn" title="Settings">⚙</button>
+    <a class="settings-btn" id="sheetsLink" href="#" target="_blank" title="Open Google Sheet" style="display:none;text-decoration:none">📊</a>
   </div>
   <div class="total-bar">
     <div class="total-label">Total (SGD)</div>
@@ -664,10 +698,10 @@
   function buildCCRows(containerId, cards) {
     const c = document.getElementById(containerId);
     c.innerHTML = '';
-    (cards||[]).forEach((cc, i) => c.appendChild(makeCCRow(containerId, cc.name, cc.bank, cc.limit, cc.dollarPerPoint, cc.pointsPerMile, cc.currentPoints, cc.color, i)));
+    (cards||[]).forEach((cc, i) => c.appendChild(makeCCRow(containerId, cc.name, cc.bank, cc.limit, cc.dollarPerPoint, cc.pointsPerMile, cc.currentPoints, cc.pooled, cc.color, i)));
   }
 
-  function makeCCRow(containerId, name, bank, limit, dollarPerPoint, pointsPerMile, currentPoints, color, index) {
+  function makeCCRow(containerId, name, bank, limit, dollarPerPoint, pointsPerMile, currentPoints, pooled, color, index) {
     const row = document.createElement('div');
     row.className = 'cc-row';
     row.innerHTML = `
@@ -678,6 +712,7 @@
       <input class="setup-input cc-dpp-input"    type="number" placeholder="e.g. 4"     min="0" step="0.01"   value="${dollarPerPoint||''}">
       <input class="setup-input cc-pts-mi-input" type="number" placeholder="e.g. 400"   min="0" step="1"      value="${pointsPerMile||''}">
       <input class="setup-input cc-curpts-input" type="number" placeholder="0"          min="0" step="1"      value="${currentPoints||''}">
+      <div class="cc-pool-wrap"><input type="checkbox" class="cc-pool-input" title="Pool points with same bank" ${pooled ? 'checked' : ''}></div>
       <button type="button" class="cc-row-del" title="Remove">✕</button>
     `;
     row.querySelector('.cc-row-del').addEventListener('click', () => row.remove());
@@ -687,7 +722,7 @@
   function addCCRow(containerId) {
     const c = document.getElementById(containerId);
     const i = c.querySelectorAll('.cc-row').length;
-    c.appendChild(makeCCRow(containerId, '', '', '', '', '', '', CARD_COLORS[i % CARD_COLORS.length], i));
+    c.appendChild(makeCCRow(containerId, '', '', '', '', '', '', false, CARD_COLORS[i % CARD_COLORS.length], i));
   }
 
   function readCCRows(containerId) {
@@ -699,6 +734,7 @@
         dollarPerPoint:parseFloat(row.querySelector('.cc-dpp-input').value)    || 0,
         pointsPerMile: parseFloat(row.querySelector('.cc-pts-mi-input').value) || 0,
         currentPoints: parseFloat(row.querySelector('.cc-curpts-input').value) || 0,
+        pooled:        row.querySelector('.cc-pool-input').checked,
         color:         CARD_COLORS[i % CARD_COLORS.length]
       }))
       .filter(cc => cc.name);
@@ -711,9 +747,11 @@
 
   document.getElementById('ob-addCcBtn').addEventListener('click', () => addCCRow('ob-ccRows'));
   document.getElementById('ob-saveBtn').addEventListener('click', () => {
-    const url = document.getElementById('ob-scriptUrl').value.trim();
-    if (!url) { alert('Please enter your Apps Script URL.'); return; }
-    config = { scriptUrl: url, creditCards: readCCRows('ob-ccRows') };
+    const url     = document.getElementById('ob-scriptUrl').value.trim();
+    const sheetId = document.getElementById('ob-sheetId').value.trim();
+    if (!url)     { alert('Please enter your Apps Script URL.'); return; }
+    if (!sheetId) { alert('Please enter your Spreadsheet ID.'); return; }
+    config = { scriptUrl: url, sheetId, creditCards: readCCRows('ob-ccRows') };
     saveConfig(config);
     document.getElementById('onboardingOverlay').classList.remove('active');
     applyConfig();
@@ -722,6 +760,7 @@
 
   document.getElementById('openSettingsBtn').addEventListener('click', () => {
     document.getElementById('st-scriptUrl').value = config?.scriptUrl || '';
+    document.getElementById('st-sheetId').value   = config?.sheetId   || '';
     buildCCRows('st-ccRows', config?.creditCards || []);
     document.getElementById('settingsOverlay').classList.add('active');
   });
@@ -731,9 +770,11 @@
     document.getElementById('settingsOverlay').classList.remove('active');
   });
   document.getElementById('st-saveBtn').addEventListener('click', () => {
-    const url = document.getElementById('st-scriptUrl').value.trim();
-    if (!url) { alert('Please enter your Apps Script URL.'); return; }
-    config = { scriptUrl: url, creditCards: readCCRows('st-ccRows') };
+    const url     = document.getElementById('st-scriptUrl').value.trim();
+    const sheetId = document.getElementById('st-sheetId').value.trim();
+    if (!url)     { alert('Please enter your Apps Script URL.'); return; }
+    if (!sheetId) { alert('Please enter your Spreadsheet ID.'); return; }
+    config = { scriptUrl: url, sheetId, creditCards: readCCRows('st-ccRows') };
     saveConfig(config);
     document.getElementById('settingsOverlay').classList.remove('active');
     applyConfig();
@@ -747,6 +788,15 @@
   // ── Apply config to form dropdowns ────────────────────
   function applyConfig() {
     if (!config) return;
+
+    // Update Sheets link
+    const sheetsLink = document.getElementById('sheetsLink');
+    if (config.sheetId) {
+      sheetsLink.href = `https://docs.google.com/spreadsheets/d/${config.sheetId}/edit`;
+      sheetsLink.style.display = 'inline-flex';
+    } else {
+      sheetsLink.style.display = 'none';
+    }
     const pmEl = document.getElementById('paymentMethod');
     pmEl.innerHTML = '<option value="">Select...</option>';
     const cards = config.creditCards || [];
@@ -841,12 +891,29 @@
       }
     });
 
-    // Sum ALL-TIME spend per card (for lifetime points earned from tracked expenses)
+    // Sum ALL-TIME spend per card
     const allTimeTotals = {};
     cards.forEach(cc => { allTimeTotals[cc.name] = 0; });
     expenses.forEach(exp => {
       if (allTimeTotals.hasOwnProperty(exp.paymentMethod)) {
         allTimeTotals[exp.paymentMethod] += parseFloat(exp.amountSGD || exp.amount) || 0;
+      }
+    });
+
+    // Pre-compute per-card individual points and pooled bank totals
+    // pooled: bank -> { totalPoints, pointsPerMile }
+    const bankPools = {};  // bank -> { totalPts, ppm }
+    cards.forEach(cc => {
+      const dpp = cc.dollarPerPoint || 0;
+      const ppm = cc.pointsPerMile  || 0;
+      const base= cc.currentPoints  || 0;
+      const earned = dpp > 0 ? allTimeTotals[cc.name] * dpp : 0;
+      const cardPts = base + earned;
+
+      if (cc.pooled && cc.bank) {
+        if (!bankPools[cc.bank]) bankPools[cc.bank] = { totalPts: 0, ppm: ppm };
+        bankPools[cc.bank].totalPts += cardPts;
+        if (ppm > 0) bankPools[cc.bank].ppm = ppm; // use last defined ppm for bank
       }
     });
 
@@ -856,6 +923,7 @@
 
     let grandTotalMiles = 0;
     let anyMilesConfig  = false;
+    const countedBankPools = new Set(); // track which banks already counted for grand total
 
     cards.forEach(cc => {
       const amt   = totals[cc.name];
@@ -869,40 +937,65 @@
         barPct   = Math.min(ratio * 100, 100);
         barClass = ratio >= 1 ? 'over' : ratio >= 0.8 ? 'warn' : '';
         const rem = limit - amt;
-        if (ratio >= 1)       limitInfo = `<div class="cc-limit-info over">Over by SGD ${Math.abs(rem).toFixed(2)}</div>`;
+        if (ratio >= 1)        limitInfo = `<div class="cc-limit-info over">Over by SGD ${Math.abs(rem).toFixed(2)}</div>`;
         else if (ratio >= 0.8) limitInfo = `<div class="cc-limit-info warn">${(ratio*100).toFixed(0)}% of SGD ${limit.toLocaleString()}</div>`;
         else                   limitInfo = `<div class="cc-limit-info ok">SGD ${rem.toFixed(2)} remaining</div>`;
       } else {
-        barPct   = (amt / maxAmt) * 100;
-        barClass = '';
+        barPct    = (amt / maxAmt) * 100;
+        barClass  = '';
         limitInfo = `<div class="cc-limit-info ok">No limit set</div>`;
       }
 
       // ── Miles calculation ──
-      // Points = currentPoints (base) + (allTimeTotalSpend × pt/$)
-      // Miles  = totalPoints / pointsPerMile
-      const dpp = cc.dollarPerPoint  || 0;  // pt/$ — points earned per dollar spent
-      const ppm = cc.pointsPerMile   || 0;
-      const base= cc.currentPoints   || 0;
+      const dpp  = cc.dollarPerPoint || 0;
+      const ppm  = cc.pointsPerMile  || 0;
+      const base = cc.currentPoints  || 0;
 
       let milesSection = '';
       if (dpp > 0 && ppm > 0) {
         anyMilesConfig = true;
-        const earnedPoints = allTimeTotals[cc.name] * dpp;  // spend × pt/$
-        const totalPoints  = base + earnedPoints;
-        const miles        = totalPoints / ppm;
-        grandTotalMiles   += miles;
+        const earned     = allTimeTotals[cc.name] * dpp;
+        const cardPts    = base + earned;
+        const cardMiles  = cardPts / ppm;
+
+        // Individual card miles
         milesSection = `
           <div class="cc-miles-divider"></div>
           <div class="cc-miles-row">
-            <div class="cc-miles-label">✈ Miles</div>
-            <div class="cc-miles-value">${Math.floor(miles).toLocaleString()}<span class="cc-miles-unit">mi</span></div>
+            <div class="cc-miles-label">✈ Card miles</div>
+            <div class="cc-miles-value">${Math.floor(cardMiles).toLocaleString()}<span class="cc-miles-unit">mi</span></div>
           </div>
           <div class="cc-pts-row">
-            <div class="cc-pts-label">${Math.floor(totalPoints).toLocaleString()} pts total</div>
-            <div class="cc-pts-value">+${Math.floor(earnedPoints).toLocaleString()} earned</div>
+            <div class="cc-pts-label">${Math.floor(cardPts).toLocaleString()} pts</div>
+            <div class="cc-pts-value">+${Math.floor(earned).toLocaleString()} earned</div>
           </div>
         `;
+
+        // Pooled bank total (show on each card in the pool, count miles once for grand total)
+        if (cc.pooled && cc.bank && bankPools[cc.bank]) {
+          const pool = bankPools[cc.bank];
+          const poolMiles = pool.ppm > 0 ? pool.totalPts / pool.ppm : 0;
+          milesSection += `
+            <div class="cc-pool-total">
+              <div class="cc-pool-badge">⟳ ${cc.bank} pool</div>
+              <div class="cc-pool-total-row" style="margin-top:4px">
+                <div class="cc-pool-total-label">✈ Pooled miles</div>
+                <div class="cc-pool-total-value">${Math.floor(poolMiles).toLocaleString()} mi</div>
+              </div>
+              <div class="cc-pts-row">
+                <div class="cc-pts-label">${Math.floor(pool.totalPts).toLocaleString()} pts combined</div>
+              </div>
+            </div>
+          `;
+          // Add pooled miles to grand total once per bank
+          if (!countedBankPools.has(cc.bank)) {
+            grandTotalMiles += poolMiles;
+            countedBankPools.add(cc.bank);
+          }
+        } else {
+          grandTotalMiles += cardMiles;
+        }
+
       } else if (dpp > 0 || ppm > 0) {
         milesSection = `
           <div class="cc-miles-divider"></div>
@@ -936,7 +1029,7 @@
     ccGridWrap.innerHTML = '';
     ccGridWrap.appendChild(grid);
 
-    // Update header miles total
+    // Header miles total
     if (anyMilesConfig) {
       milesTotalWrap.style.display = 'flex';
       milesTotalDisp.textContent = Math.floor(grandTotalMiles).toLocaleString();
@@ -1013,6 +1106,10 @@
           description: r.description||'', currency: r.currency||'SGD',
           remarks: r.remarks||'', fxRate: r.fxRate||'', amountSGD: r.amountSGD||''
         }));
+        expenses.sort((a, b) => {
+          const da = parseTimestamp(a.timestamp), db = parseTimestamp(b.timestamp);
+          return (db||0) - (da||0);
+        });
         visibleCount = PAGE_SIZE;
         render();
         setSyncStatus('success', '✓ Loaded');
@@ -1073,6 +1170,10 @@
     }
 
     expenses.unshift(expense);
+    expenses.sort((a, b) => {
+      const da = parseTimestamp(a.timestamp), db = parseTimestamp(b.timestamp);
+      return (db||0) - (da||0);
+    });
     visibleCount = Math.max(visibleCount, PAGE_SIZE);
     render();
     form.reset();
