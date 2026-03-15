@@ -526,8 +526,10 @@
       <h1>Home<span>y</span></h1>
       <div class="tagline">Shared expense tracker · syncs to Google Sheets</div>
     </div>
-    <button class="settings-btn" id="openSettingsBtn" title="Settings">⚙</button>
-    <a class="settings-btn" id="sheetsLink" href="#" target="_blank" title="Open Google Sheet" style="display:none;text-decoration:none">📊</a>
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+      <a class="settings-btn" id="sheetsLink" href="#" target="_blank" title="Open Google Sheet" style="display:none;text-decoration:none">📊</a>
+      <button class="settings-btn" id="openSettingsBtn" title="Settings">⚙</button>
+    </div>
   </div>
   <div class="total-bar">
     <div class="total-label">Total (SGD)</div>
