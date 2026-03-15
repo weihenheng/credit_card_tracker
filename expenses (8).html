@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Homey — Shared Expense Tracker</title>
+<style>
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0ede8;
+    --border: #ddd9d0;
+    --text: #1a1814;
+    --text-muted: #7a756a;
+    --accent: #c8602a;
+    --accent-light: #f5ede8;
+    --accent-hover: #a84e20;
+    --danger: #c0392b;
+    --danger-light: #fdf2f2;
+    --warn: #b7770d;
+    --warn-light: #fef9e7;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
+    --shadow-lg: 0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
+    --radius: 10px;
+    --font-display: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
+    --font-body: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  /* ─── Overlays ────────────────────────────────────── */
+  .overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(26,24,20,0.55); z-index: 200;
+    align-items: center; justify-content: center;
+    padding: 20px; backdrop-filter: blur(2px);
+  }
+  .overlay.active { display: flex; }
+
+  .modal {
+    background: var(--surface); border-radius: 14px;
+    box-shadow: var(--shadow-lg); width: 100%; max-width: 720px;
+    max-height: 90vh; overflow-y: auto;
+    animation: modalIn 0.2s ease;
+  }
+
+  @keyframes modalIn {
+    from { opacity:0; transform: translateY(12px) scale(0.98); }
+    to   { opacity:1; transform: none; }
+  }
+
+  .modal-header { padding: 26px 28px 0; }
+
+  .modal-logo {
+    font-family: var(--font-display); font-size: 1.55rem;
+    font-weight: 400; color: var(--text); letter-spacing: 0.02em;
+  }
+  .modal-logo span { color: var(--accent); }
+
+  .modal-tagline { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; }
+
+  .modal-section { padding: 18px 28px 0; }
+
+  .modal-section-title {
+    font-size: 0.67rem; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--text-muted);
+    margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border);
+  }
+
+  .modal-footer {
+    padding: 18px 28px 26px; display: flex;
+    justify-content: flex-end; gap: 10px;
+  }
+
+  .setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px 14px; }
+  .setup-grid.single { grid-template-columns: 1fr; }
+  .setup-field { display: flex; flex-direction: column; gap: 4px; }
+  .setup-field.full { grid-column: 1/-1; }
+
+  .setup-label {
+    font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text-muted);
+  }
+  .setup-label .req { color: var(--accent); margin-left: 2px; }
+
+  .setup-input {
+    padding: 8px 10px; border: 1.5px solid var(--border);
+    border-radius: 7px; font-family: var(--font-body);
+    font-size: 0.87rem; color: var(--text); background: var(--surface);
+    transition: border-color 0.15s, box-shadow 0.15s; width: 100%;
+  }
+  .setup-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(200,96,42,0.1); }
+  .setup-input::placeholder { color: #bbb7b0; }
+
+  /* CC rows in settings — swatch | name | bank | limit | $/pt | pt/mi | cur pts | del */
+  .cc-rows { display: flex; flex-direction: column; gap: 7px; }
+
+  .cc-row {
+    display: grid;
+    grid-template-columns: 14px 1.4fr 0.8fr 72px 72px 72px 80px 28px;
+    gap: 6px; align-items: center;
+  }
+
+  .cc-row-header {
+    display: grid;
+    grid-template-columns: 14px 1.4fr 0.8fr 72px 72px 72px 80px 28px;
+    gap: 6px; align-items: center;
+    margin-bottom: 2px;
+  }
+
+  .cc-row-header span {
+    font-size: 0.6rem; font-weight: 700; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--text-muted); line-height: 1.2;
+  }
+
+  .cc-swatch { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+
+  .cc-row-del {
+    background: none; border: none; cursor: pointer; color: #ccc;
+    font-size: 0.95rem; padding: 2px; border-radius: 4px;
+    transition: color 0.15s, background 0.15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cc-row-del:hover { color: var(--danger); background: var(--danger-light); }
+
+  .add-cc-btn {
+    font-size: 0.77rem; font-weight: 600; color: var(--accent);
+    background: var(--accent-light); border: 1.5px dashed #e8a882;
+    border-radius: 7px; padding: 7px 12px; cursor: pointer;
+    width: 100%; margin-top: 5px; transition: background 0.15s;
+  }
+  .add-cc-btn:hover { background: #f0ddd2; }
+
+  .setup-hint {
+    font-size: 0.71rem; color: var(--text-muted); line-height: 1.5;
+    background: var(--surface2); border-radius: 7px; padding: 9px 11px; margin-top: 4px;
+  }
+
+  /* ─── Header ──────────────────────────────────────── */
+  header {
+    background: var(--text); color: #f5f4f0;
+    padding: 20px 24px 18px; position: sticky; top: 0;
+    z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+  }
+
+  .header-top {
+    display: flex; align-items: flex-start;
+    justify-content: space-between; gap: 12px;
+  }
+
+  header h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.3rem, 5vw, 1.7rem);
+    font-weight: 400; letter-spacing: 0.03em; line-height: 1;
+  }
+  header h1 span { color: var(--accent); }
+
+  header .tagline { font-size: 0.7rem; color: #a09a90; margin-top: 3px; letter-spacing: 0.04em; }
+
+  .settings-btn {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14);
+    color: #a09a90; border-radius: 7px; padding: 6px 9px; cursor: pointer;
+    font-size: 1rem; transition: background 0.15s, color 0.15s; flex-shrink: 0;
+  }
+  .settings-btn:hover { background: rgba(255,255,255,0.14); color: #f5f4f0; }
+
+  .total-bar {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 13px; padding-top: 13px;
+    border-top: 1px solid rgba(255,255,255,0.1); flex-wrap: wrap;
+  }
+
+  .total-label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: #a09a90; }
+
+  .total-amount {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 6vw, 2rem);
+    font-weight: 400; color: #f5f4f0; letter-spacing: -0.01em;
+  }
+  .total-amount span { font-size: 0.62em; color: #a09a90; margin-right: 2px; }
+
+  .sync-status {
+    display: none; align-items: center;
+    font-size: 0.68rem; font-weight: 600; padding: 3px 9px; border-radius: 20px;
+  }
+  .sync-status.syncing { background: rgba(255,255,255,0.1); color: #c8d8f0; }
+  .sync-status.success { background: rgba(46,125,82,0.25); color: #7de0a8; }
+  .sync-status.error   { background: rgba(192,57,43,0.25); color: #f0a09a; }
+
+  /* ─── Main ────────────────────────────────────────── */
+  .main { max-width: 960px; margin: 0 auto; padding: 26px 16px 0; }
+
+  .card {
+    background: var(--surface); border-radius: var(--radius);
+    box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 22px;
+  }
+
+  .card-header {
+    padding: 17px 22px 14px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+  }
+
+  .card-title {
+    font-family: var(--font-display); font-size: 1.05rem;
+    font-weight: 400; color: var(--text); letter-spacing: 0.02em;
+  }
+  .card-subtitle { font-size: 0.69rem; color: var(--text-muted); margin-top: 3px; }
+
+  /* ─── Form ────────────────────────────────────────── */
+  form { padding: 17px 22px 20px; }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 13px 17px;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field.full { grid-column: 1/-1; }
+
+  label {
+    font-size: 0.69rem; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text-muted);
+  }
+  label .req { color: var(--accent); margin-left: 2px; }
+
+  input[type=text], input[type=number], select {
+    width: 100%; padding: 9px 10px;
+    border: 1.5px solid var(--border); border-radius: 7px;
+    font-family: var(--font-body); font-size: 0.89rem;
+    color: var(--text); background: var(--surface);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    appearance: none; -webkit-appearance: none;
+  }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a756a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px;
+  }
+
+  input:focus, select:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(200,96,42,0.1);
+  }
+  input::placeholder { color: #bbb7b0; }
+
+  .currency-note { font-size: 0.71rem; color: var(--accent); margin-top: 3px; display: none; }
+  .currency-note.visible { display: block; }
+
+  .form-actions {
+    display: flex; gap: 10px; justify-content: flex-end;
+    margin-top: 16px; padding-top: 15px; border-top: 1px solid var(--border);
+  }
+
+  button {
+    font-family: var(--font-body); font-size: 0.83rem; font-weight: 600;
+    letter-spacing: 0.04em; border: none; border-radius: 7px; cursor: pointer;
+    padding: 8px 17px; transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+  }
+  button:active { transform: scale(0.97); }
+
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 3px 8px rgba(200,96,42,0.22); }
+  .btn-secondary { background: var(--surface2); color: var(--text-muted); border: 1.5px solid var(--border); }
+  .btn-secondary:hover { background: var(--border); }
+  .btn-danger { background: var(--danger-light); color: var(--danger); border: 1.5px solid #f0cece; font-size: 0.77rem; padding: 6px 12px; }
+  .btn-danger:hover { background: #fce8e8; }
+
+  .count-badge {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted);
+    font-size: 0.69rem; font-weight: 600; padding: 3px 9px; border-radius: 20px; letter-spacing: 0.04em;
+  }
+
+  /* ─── CC Dashboard ────────────────────────────────── */
+  .cc-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px; padding: 17px 22px;
+  }
+
+  .cc-empty-msg { padding: 28px 22px; text-align: center; color: var(--text-muted); font-size: 0.84rem; }
+
+  .cc-item {
+    border-radius: 9px; padding: 13px 15px 13px 19px;
+    border: 1.5px solid var(--border); background: var(--surface);
+    position: relative; overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .cc-item:not(.cc-zero):hover { border-color: var(--cc-color); box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+  .cc-item::before { content:''; position: absolute; left:0; top:0; bottom:0; width:5px; background: var(--cc-color); }
+
+  .cc-name { font-size: 0.8rem; font-weight: 700; color: var(--text); margin-bottom: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cc-bank { font-size: 0.63rem; color: var(--text-muted); letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 9px; }
+
+  .cc-bar-wrap { background: var(--surface2); border-radius: 4px; height: 6px; overflow: hidden; margin-bottom: 6px; position: relative; }
+  .cc-bar {
+    height: 100%; border-radius: 4px;
+    background: var(--cc-color);
+    transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+  }
+  .cc-bar.warn  { background: var(--warn); }
+  .cc-bar.over  { background: var(--danger); }
+
+  .cc-stats { display: flex; justify-content: space-between; align-items: baseline; }
+  .cc-amount { font-family: var(--font-display); font-size: 1.1rem; color: var(--text); }
+  .cc-sgd { font-size: 0.57em; color: var(--text-muted); margin-right: 1px; }
+  .cc-right { text-align: right; }
+  .cc-txns { font-size: 0.67rem; color: var(--text-muted); }
+  .cc-limit-info { font-size: 0.67rem; margin-top: 1px; }
+  .cc-limit-info.ok   { color: var(--text-muted); }
+  .cc-limit-info.warn { color: var(--warn); font-weight: 600; }
+  .cc-limit-info.over { color: var(--danger); font-weight: 600; }
+  .cc-zero { opacity: 0.38; }
+
+  /* ─── Table ───────────────────────────────────────── */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+
+  th {
+    padding: 10px 12px; text-align: left; font-size: 0.65rem; font-weight: 700;
+    letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-muted);
+    background: var(--surface2); border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+
+  td { padding: 10px 12px; border-bottom: 1px solid #f0ede8; color: var(--text); vertical-align: top; }
+  td.amount { font-family: var(--font-display); font-size: 0.91rem; white-space: nowrap; }
+  td.muted { color: var(--text-muted); font-size: 0.77rem; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #faf9f7; }
+
+  .delete-btn {
+    background: none; border: none; padding: 3px 5px; border-radius: 4px;
+    cursor: pointer; color: #ccc; font-size: 0.93rem; line-height: 1;
+    transition: color 0.15s, background 0.15s;
+  }
+  .delete-btn:hover { color: var(--danger); background: var(--danger-light); }
+
+  .load-more-wrap { padding: 14px 22px; border-top: 1px solid var(--border); text-align: center; }
+  .btn-load-more {
+    background: var(--surface2); color: var(--text-muted);
+    border: 1.5px solid var(--border); font-size: 0.8rem; padding: 7px 20px;
+    border-radius: 7px; cursor: pointer; font-weight: 600;
+    transition: background 0.15s;
+  }
+  .btn-load-more:hover { background: var(--border); }
+
+  .empty-state { padding: 42px 22px; text-align: center; color: var(--text-muted); }
+  .empty-state .icon { font-size: 2.2rem; margin-bottom: 10px; opacity: 0.37; }
+  .empty-state p { font-size: 0.87rem; line-height: 1.5; }
+
+  /* ─── Pills ───────────────────────────────────────── */
+  .pill { display: inline-block; padding: 2px 7px; border-radius: 20px; font-size: 0.69rem; font-weight: 600; white-space: nowrap; }
+  .pill-food          { background: #fef3e2; color: #b26a00; }
+  .pill-transport     { background: #e8f0fe; color: #1a56cc; }
+  .pill-shopping      { background: #f5e8fe; color: #7b1fa2; }
+  .pill-groceries     { background: #e8faf0; color: #1a7a3c; }
+  .pill-cleaning      { background: #e3f6fc; color: #0a7a9a; }
+  .pill-utilities     { background: #e8f4f8; color: #0a6b8a; }
+  .pill-appliances    { background: #fde8d8; color: #c05a00; }
+  .pill-maintenance   { background: #f0ede8; color: #6b5e4e; }
+  .pill-subscriptions { background: #fce8f4; color: #a0237b; }
+  .pill-gifts         { background: #fce8ea; color: #c42b3a; }
+  .pill-misc          { background: var(--surface2); color: var(--text-muted); }
+
+  .cc-miles-divider { border-top: 1px solid var(--border); margin: 8px 0 6px; }
+  .cc-miles-row { display: flex; justify-content: space-between; align-items: baseline; }
+  .cc-miles-label { font-size: 0.63rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .cc-miles-value { font-family: var(--font-display); font-size: 1rem; color: var(--accent); }
+  .cc-miles-unit { font-size: 0.55em; color: var(--text-muted); margin-left: 2px; }
+  .cc-pts-row { display: flex; justify-content: space-between; margin-top: 2px; }
+  .cc-pts-label { font-size: 0.62rem; color: var(--text-muted); }
+  .cc-pts-value { font-size: 0.62rem; color: var(--text-muted); }
+
+  .miles-total {
+    display: flex; align-items: center; gap: 8px; margin-left: 6px;
+    padding-left: 10px; border-left: 1px solid rgba(255,255,255,0.14);
+  }
+  .miles-total-label { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: #a09a90; }
+  .miles-total-value { font-family: var(--font-display); font-size: clamp(1.2rem,4vw,1.6rem); color: #f5f4f0; }
+  .miles-total-value span { font-size: 0.58em; color: #a09a90; margin-right: 2px; }
+
+  /* ─── Responsive ──────────────────────────────────── */
+  @media (max-width: 600px) {
+    header { padding: 17px 16px 15px; }
+    form { padding: 13px 15px 17px; }
+    .cc-grid { padding: 13px 15px; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .form-grid { grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+    .form-actions { flex-direction: column; }
+    .btn-primary, .btn-secondary { width: 100%; text-align: center; }
+    .card-header { padding: 13px 15px; }
+    th, td { padding: 8px 9px; }
+    .modal-header, .modal-section { padding-left: 18px; padding-right: 18px; }
+    .modal-footer { padding: 14px 18px 20px; }
+    .cc-row, .cc-row-header { grid-template-columns: 14px 1fr 60px 55px 55px 55px 65px 24px; gap: 4px; }
+  }
+
+  @media (max-width: 420px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .cc-grid { grid-template-columns: 1fr; }
+    .cc-row, .cc-row-header { grid-template-columns: 14px 1fr 55px 50px 50px 26px; }
+    .cc-bank-input, .cc-pts-mi-input { display: none; }
+  }
+
+  @keyframes slideIn {
+    from { opacity:0; transform: translateY(-5px); }
+    to   { opacity:1; transform: none; }
+  }
+  tbody tr { animation: slideIn 0.18s ease; }
+</style>
+</head>
+<body>
+
+<!-- ── Onboarding ── -->
+<div class="overlay" id="onboardingOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-logo">Home<span>y</span></div>
+      <div class="modal-tagline">Shared expense tracking · Syncs to Google Sheets · Yours forever</div>
+    </div>
+
+    <div class="modal-section" style="margin-top:16px;">
+      <div class="modal-section-title">Google Sheets Connection</div>
+      <div class="setup-grid single">
+        <div class="setup-field">
+          <label class="setup-label">Apps Script Web App URL <span class="req">*</span></label>
+          <input class="setup-input" id="ob-scriptUrl" type="text" placeholder="https://script.google.com/macros/s/…/exec">
+        </div>
+      </div>
+      <div class="setup-hint" style="margin-top:8px;">Follow the included setup guide to deploy your Google Apps Script and paste the Web App URL above.</div>
+    </div>
+
+    <div class="modal-section" style="margin-top:16px;">
+      <div class="modal-section-title">Credit Cards — for spending dashboard</div>
+      <div class="cc-row-header">
+        <span></span><span>Card name</span><span>Bank</span><span>Limit (SGD)</span><span>pt/$</span><span>pt/mile</span><span>Cur. pts</span><span></span>
+      </div>
+      <div class="cc-rows" id="ob-ccRows"></div>
+      <button class="add-cc-btn" id="ob-addCcBtn">+ Add credit card</button>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-primary" id="ob-saveBtn">Get started →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Settings ── -->
+<div class="overlay" id="settingsOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-logo">Home<span>y</span> — Settings</div>
+    </div>
+
+    <div class="modal-section" style="margin-top:16px;">
+      <div class="modal-section-title">Google Sheets Connection</div>
+      <div class="setup-grid single">
+        <div class="setup-field">
+          <label class="setup-label">Apps Script Web App URL <span class="req">*</span></label>
+          <input class="setup-input" id="st-scriptUrl" type="text">
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-section" style="margin-top:16px;">
+      <div class="modal-section-title">Credit Cards</div>
+      <div class="cc-row-header">
+        <span></span><span>Card name</span><span>Bank</span><span>Limit (SGD)</span><span>pt/$</span><span>pt/mile</span><span>Cur. pts</span><span></span>
+      </div>
+      <div class="cc-rows" id="st-ccRows"></div>
+      <button class="add-cc-btn" id="st-addCcBtn">+ Add credit card</button>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" id="st-cancelBtn">Cancel</button>
+      <button class="btn-primary" id="st-saveBtn">Save settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Header ── -->
+<header>
+  <div class="header-top">
+    <div>
+      <h1>Home<span>y</span></h1>
+      <div class="tagline">Shared expense tracker · syncs to Google Sheets</div>
+    </div>
+    <button class="settings-btn" id="openSettingsBtn" title="Settings">⚙</button>
+  </div>
+  <div class="total-bar">
+    <div class="total-label">Total (SGD)</div>
+    <div class="total-amount"><span>$</span><span id="totalDisplay">0.00</span></div>
+    <div class="miles-total" id="milesTotalWrap" style="display:none">
+      <div class="miles-total-label">Miles</div>
+      <div class="miles-total-value"><span>✈</span><span id="milesTotalDisplay">0</span></div>
+    </div>
+    <span id="syncStatus" class="sync-status"></span>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- ── Add Expense Form ── -->
+  <div class="card">
+    <div class="card-header"><span class="card-title">Add Expense</span></div>
+    <form id="expenseForm">
+      <div class="form-grid">
+
+        <div class="field">
+          <label>Amount <span class="req">*</span></label>
+          <input type="number" id="amount" min="0" step="0.01" placeholder="0.00" required>
+        </div>
+
+        <div class="field">
+          <label>Payment Method <span class="req">*</span></label>
+          <select id="paymentMethod" required>
+            <option value="">Select...</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Category <span class="req">*</span></label>
+          <select id="category" required>
+            <option value="">Select...</option>
+            <option value="Food">Food</option>
+            <option value="Transport">Transport</option>
+            <option value="Shopping & Entertainment">Shopping & Entertainment</option>
+            <option value="Groceries">Groceries</option>
+            <option value="Cleaning">Cleaning</option>
+            <option value="Utilities">Utilities</option>
+            <option value="Appliances & Furniture">Appliances & Furniture</option>
+            <option value="Maintenance">Maintenance</option>
+            <option value="Subscriptions">Subscriptions</option>
+            <option value="Gifts">Gifts</option>
+            <option value="Miscellaneous">Miscellaneous</option>
+          </select>
+        </div>
+
+        <div class="field full">
+          <label>Item Description</label>
+          <input type="text" id="description" placeholder="e.g. Lunch at Maxwell Food Centre">
+        </div>
+
+        <div class="field">
+          <label>Original Currency</label>
+          <select id="currency">
+            <option value="SGD">SGD</option>
+            <option value="USD">USD</option>
+            <option value="EUR">EUR</option>
+            <option value="GBP">GBP</option>
+            <option value="JPY">JPY</option>
+            <option value="CNY">CNY</option>
+            <option value="AUD">AUD</option>
+            <option value="HKD">HKD</option>
+            <option value="MYR">MYR</option>
+            <option value="THB">THB</option>
+            <option value="IDR">IDR</option>
+            <option value="Other">Other</option>
+          </select>
+          <div class="currency-note" id="currencyNote">⚠ Foreign currency — enter SGD-equivalent amount above.</div>
+        </div>
+
+        <div class="field">
+          <label>Remarks</label>
+          <input type="text" id="remarks" placeholder="Optional notes">
+        </div>
+
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" id="resetBtn">Clear</button>
+        <button type="submit" class="btn-primary">+ Add Expense</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ── CC Dashboard ── -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Credit Card Spending</div>
+        <div class="card-subtitle" id="ccMonthLabel">Loading…</div>
+      </div>
+    </div>
+    <div id="ccGridWrap"></div>
+  </div>
+
+  <!-- ── Entries Table ── -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Recent Entries</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="count-badge" id="countBadge">0 entries</span>
+        <button class="btn-danger" id="clearAllBtn">Clear All</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="expenseTable" style="display:none">
+        <thead>
+          <tr>
+            <th>Date & Time</th>
+            <th>Amount</th>
+            <th>Method</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Currency</th>
+            <th>Remarks</th>
+            <th>FX Rate</th>
+            <th>Amount (SGD)</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <div class="empty-state" id="emptyState">
+        <div class="icon">🧾</div>
+        <p>No expenses yet.<br>Add your first entry above.</p>
+      </div>
+    </div>
+    <div class="load-more-wrap" id="loadMoreWrap" style="display:none">
+      <button class="btn-load-more" id="loadMoreBtn">Load 10 more</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const CFG_KEY    = 'homey_config_v1';
+  const PAGE_SIZE  = 10;
+  const CARD_COLORS = ['#b03a2e','#c0392b','#8e44ad','#6c3483','#1a5276','#1e8449','#b7770d','#117a65','#7d6608','#0e6655'];
+
+  function loadConfig() { try { return JSON.parse(localStorage.getItem(CFG_KEY)) || null; } catch { return null; } }
+  function saveConfig(c) { localStorage.setItem(CFG_KEY, JSON.stringify(c)); }
+
+  let config   = loadConfig();
+  let expenses = [];
+  let visibleCount = PAGE_SIZE;
+
+  // ── DOM ───────────────────────────────────────────────
+  const form           = document.getElementById('expenseForm');
+  const tableBody      = document.getElementById('tableBody');
+  const emptyState     = document.getElementById('emptyState');
+  const totalDisplay   = document.getElementById('totalDisplay');
+  const countBadge     = document.getElementById('countBadge');
+  const currencySelect = document.getElementById('currency');
+  const currencyNote   = document.getElementById('currencyNote');
+  const syncStatus     = document.getElementById('syncStatus');
+  const ccGridWrap     = document.getElementById('ccGridWrap');
+  const ccMonthLabel   = document.getElementById('ccMonthLabel');
+  const loadMoreWrap   = document.getElementById('loadMoreWrap');
+  const loadMoreBtn    = document.getElementById('loadMoreBtn');
+  const milesTotalWrap = document.getElementById('milesTotalWrap');
+  const milesTotalDisp = document.getElementById('milesTotalDisplay');
+
+  // ── Settings / Onboarding helpers ─────────────────────
+
+  function buildCCRows(containerId, cards) {
+    const c = document.getElementById(containerId);
+    c.innerHTML = '';
+    (cards||[]).forEach((cc, i) => c.appendChild(makeCCRow(containerId, cc.name, cc.bank, cc.limit, cc.dollarPerPoint, cc.pointsPerMile, cc.currentPoints, cc.color, i)));
+  }
+
+  function makeCCRow(containerId, name, bank, limit, dollarPerPoint, pointsPerMile, currentPoints, color, index) {
+    const row = document.createElement('div');
+    row.className = 'cc-row';
+    row.innerHTML = `
+      <div class="cc-swatch" style="background:${color||CARD_COLORS[index%CARD_COLORS.length]}"></div>
+      <input class="setup-input cc-name-input"   type="text"   placeholder="Card name"  value="${name||''}">
+      <input class="setup-input cc-bank-input"   type="text"   placeholder="Bank"       value="${bank||''}">
+      <input class="setup-input cc-limit-input"  type="number" placeholder="No limit"   min="0" step="1"      value="${limit||''}">
+      <input class="setup-input cc-dpp-input"    type="number" placeholder="e.g. 4"     min="0" step="0.01"   value="${dollarPerPoint||''}">
+      <input class="setup-input cc-pts-mi-input" type="number" placeholder="e.g. 400"   min="0" step="1"      value="${pointsPerMile||''}">
+      <input class="setup-input cc-curpts-input" type="number" placeholder="0"          min="0" step="1"      value="${currentPoints||''}">
+      <button type="button" class="cc-row-del" title="Remove">✕</button>
+    `;
+    row.querySelector('.cc-row-del').addEventListener('click', () => row.remove());
+    return row;
+  }
+
+  function addCCRow(containerId) {
+    const c = document.getElementById(containerId);
+    const i = c.querySelectorAll('.cc-row').length;
+    c.appendChild(makeCCRow(containerId, '', '', '', '', '', '', CARD_COLORS[i % CARD_COLORS.length], i));
+  }
+
+  function readCCRows(containerId) {
+    return [...document.getElementById(containerId).querySelectorAll('.cc-row')]
+      .map((row, i) => ({
+        name:          row.querySelector('.cc-name-input').value.trim(),
+        bank:          row.querySelector('.cc-bank-input').value.trim(),
+        limit:         parseFloat(row.querySelector('.cc-limit-input').value)  || 0,
+        dollarPerPoint:parseFloat(row.querySelector('.cc-dpp-input').value)    || 0,
+        pointsPerMile: parseFloat(row.querySelector('.cc-pts-mi-input').value) || 0,
+        currentPoints: parseFloat(row.querySelector('.cc-curpts-input').value) || 0,
+        color:         CARD_COLORS[i % CARD_COLORS.length]
+      }))
+      .filter(cc => cc.name);
+  }
+
+  function showOnboarding() {
+    buildCCRows('ob-ccRows', []);
+    document.getElementById('onboardingOverlay').classList.add('active');
+  }
+
+  document.getElementById('ob-addCcBtn').addEventListener('click', () => addCCRow('ob-ccRows'));
+  document.getElementById('ob-saveBtn').addEventListener('click', () => {
+    const url = document.getElementById('ob-scriptUrl').value.trim();
+    if (!url) { alert('Please enter your Apps Script URL.'); return; }
+    config = { scriptUrl: url, creditCards: readCCRows('ob-ccRows') };
+    saveConfig(config);
+    document.getElementById('onboardingOverlay').classList.remove('active');
+    applyConfig();
+    loadFromSheets();
+  });
+
+  document.getElementById('openSettingsBtn').addEventListener('click', () => {
+    document.getElementById('st-scriptUrl').value = config?.scriptUrl || '';
+    buildCCRows('st-ccRows', config?.creditCards || []);
+    document.getElementById('settingsOverlay').classList.add('active');
+  });
+
+  document.getElementById('st-addCcBtn').addEventListener('click', () => addCCRow('st-ccRows'));
+  document.getElementById('st-cancelBtn').addEventListener('click', () => {
+    document.getElementById('settingsOverlay').classList.remove('active');
+  });
+  document.getElementById('st-saveBtn').addEventListener('click', () => {
+    const url = document.getElementById('st-scriptUrl').value.trim();
+    if (!url) { alert('Please enter your Apps Script URL.'); return; }
+    config = { scriptUrl: url, creditCards: readCCRows('st-ccRows') };
+    saveConfig(config);
+    document.getElementById('settingsOverlay').classList.remove('active');
+    applyConfig();
+    loadFromSheets();
+  });
+
+  document.getElementById('settingsOverlay').addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('active');
+  });
+
+  // ── Apply config to form dropdowns ────────────────────
+  function applyConfig() {
+    if (!config) return;
+    const pmEl = document.getElementById('paymentMethod');
+    pmEl.innerHTML = '<option value="">Select...</option>';
+    const cards = config.creditCards || [];
+    if (cards.length) {
+      const cg = document.createElement('optgroup');
+      cg.label = '── Credit Cards ──';
+      cards.forEach(cc => {
+        const o = document.createElement('option');
+        o.value = cc.name; o.textContent = cc.name;
+        cg.appendChild(o);
+      });
+      pmEl.appendChild(cg);
+    }
+    const og = document.createElement('optgroup');
+    og.label = '── Other Methods ──';
+    ['Debit Card','Cash','QR / PayNow','Bank Transfer','Other'].forEach(m => {
+      const o = document.createElement('option');
+      o.value = m; o.textContent = m; og.appendChild(o);
+    });
+    pmEl.appendChild(og);
+  }
+
+  // ── Utilities ─────────────────────────────────────────
+
+  function setSyncStatus(state, msg) {
+    syncStatus.className = 'sync-status ' + state;
+    syncStatus.textContent = msg;
+    syncStatus.style.display = 'inline-flex';
+    if (state === 'success') setTimeout(() => { syncStatus.style.display = 'none'; }, 3000);
+  }
+
+  function parseTimestamp(ts) {
+    if (!ts) return null;
+    const d = new Date(ts);
+    if (!isNaN(d)) return d;
+    const m = String(ts).match(/(\d{1,2})\s+(\w{3})\s+(\d{4})/);
+    if (m) return new Date(`${m[2]} ${m[1]}, ${m[3]}`);
+    return null;
+  }
+
+  function isCurrentMonth(ts) {
+    const d = parseTimestamp(ts);
+    if (!d) return false;
+    const now = new Date();
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  }
+
+  function formatDate(ts) {
+    if (!ts) return '—';
+    const d = parseTimestamp(ts);
+    if (!d || isNaN(d)) return `<span>${ts}</span>`;
+    const date = d.toLocaleDateString('en-SG', { day:'2-digit', month:'short', year:'numeric' });
+    const time = d.toLocaleTimeString('en-SG', { hour:'2-digit', minute:'2-digit' });
+    return `${date}<br><span style="color:#aaa;font-size:0.67rem">${time}</span>`;
+  }
+
+  function formatTimestampForSheet() {
+    return new Date().toLocaleString('en-SG', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  }
+
+  function categoryPill(cat) {
+    const key = (cat||'').toLowerCase().replace(/[^a-z]/g,'');
+    const cls = {
+      food:'pill-food', transport:'pill-transport', shoppingentertainment:'pill-shopping',
+      groceries:'pill-groceries', cleaning:'pill-cleaning', utilities:'pill-utilities',
+      appliancesfurniture:'pill-appliances', maintenance:'pill-maintenance',
+      subscriptions:'pill-subscriptions', gifts:'pill-gifts', miscellaneous:'pill-misc'
+    }[key] || 'pill-misc';
+    return `<span class="pill ${cls}">${cat||'Miscellaneous'}</span>`;
+  }
+
+  // ── CC Dashboard ───────────────────────────────────────
+
+  function renderCCDashboard() {
+    const now = new Date();
+    ccMonthLabel.textContent = now.toLocaleString('en-SG', { month:'long', year:'numeric' }) + ' · resets on the 1st';
+
+    const cards = config?.creditCards || [];
+    if (!cards.length) {
+      ccGridWrap.innerHTML = '<div class="cc-empty-msg">No credit cards configured. Open ⚙ Settings to add your cards.</div>';
+      milesTotalWrap.style.display = 'none';
+      return;
+    }
+
+    // Sum current-month spend per card
+    const totals = {}, counts = {};
+    cards.forEach(cc => { totals[cc.name] = 0; counts[cc.name] = 0; });
+    expenses.forEach(exp => {
+      if (isCurrentMonth(exp.timestamp) && totals.hasOwnProperty(exp.paymentMethod)) {
+        totals[exp.paymentMethod] += parseFloat(exp.amountSGD || exp.amount) || 0;
+        counts[exp.paymentMethod]++;
+      }
+    });
+
+    // Sum ALL-TIME spend per card (for lifetime points earned from tracked expenses)
+    const allTimeTotals = {};
+    cards.forEach(cc => { allTimeTotals[cc.name] = 0; });
+    expenses.forEach(exp => {
+      if (allTimeTotals.hasOwnProperty(exp.paymentMethod)) {
+        allTimeTotals[exp.paymentMethod] += parseFloat(exp.amountSGD || exp.amount) || 0;
+      }
+    });
+
+    const maxAmt = Math.max(...Object.values(totals), 0.01);
+    const grid = document.createElement('div');
+    grid.className = 'cc-grid';
+
+    let grandTotalMiles = 0;
+    let anyMilesConfig  = false;
+
+    cards.forEach(cc => {
+      const amt   = totals[cc.name];
+      const cnt   = counts[cc.name];
+      const limit = cc.limit || 0;
+
+      // ── Spend bar ──
+      let barPct, barClass, limitInfo;
+      if (limit > 0) {
+        const ratio = amt / limit;
+        barPct   = Math.min(ratio * 100, 100);
+        barClass = ratio >= 1 ? 'over' : ratio >= 0.8 ? 'warn' : '';
+        const rem = limit - amt;
+        if (ratio >= 1)       limitInfo = `<div class="cc-limit-info over">Over by SGD ${Math.abs(rem).toFixed(2)}</div>`;
+        else if (ratio >= 0.8) limitInfo = `<div class="cc-limit-info warn">${(ratio*100).toFixed(0)}% of SGD ${limit.toLocaleString()}</div>`;
+        else                   limitInfo = `<div class="cc-limit-info ok">SGD ${rem.toFixed(2)} remaining</div>`;
+      } else {
+        barPct   = (amt / maxAmt) * 100;
+        barClass = '';
+        limitInfo = `<div class="cc-limit-info ok">No limit set</div>`;
+      }
+
+      // ── Miles calculation ──
+      // Points = currentPoints (base) + (allTimeTotalSpend × pt/$)
+      // Miles  = totalPoints / pointsPerMile
+      const dpp = cc.dollarPerPoint  || 0;  // pt/$ — points earned per dollar spent
+      const ppm = cc.pointsPerMile   || 0;
+      const base= cc.currentPoints   || 0;
+
+      let milesSection = '';
+      if (dpp > 0 && ppm > 0) {
+        anyMilesConfig = true;
+        const earnedPoints = allTimeTotals[cc.name] * dpp;  // spend × pt/$
+        const totalPoints  = base + earnedPoints;
+        const miles        = totalPoints / ppm;
+        grandTotalMiles   += miles;
+        milesSection = `
+          <div class="cc-miles-divider"></div>
+          <div class="cc-miles-row">
+            <div class="cc-miles-label">✈ Miles</div>
+            <div class="cc-miles-value">${Math.floor(miles).toLocaleString()}<span class="cc-miles-unit">mi</span></div>
+          </div>
+          <div class="cc-pts-row">
+            <div class="cc-pts-label">${Math.floor(totalPoints).toLocaleString()} pts total</div>
+            <div class="cc-pts-value">+${Math.floor(earnedPoints).toLocaleString()} earned</div>
+          </div>
+        `;
+      } else if (dpp > 0 || ppm > 0) {
+        milesSection = `
+          <div class="cc-miles-divider"></div>
+          <div class="cc-pts-row">
+            <div class="cc-pts-label" style="color:var(--text-muted);font-style:italic">Set both pt/$ and pt/mile in Settings</div>
+          </div>
+        `;
+      }
+
+      const el = document.createElement('div');
+      el.className = 'cc-item' + (amt === 0 ? ' cc-zero' : '');
+      el.style.setProperty('--cc-color', cc.color);
+      el.innerHTML = `
+        <div class="cc-name">${cc.name}</div>
+        <div class="cc-bank">${cc.bank||''}</div>
+        <div class="cc-bar-wrap">
+          <div class="cc-bar ${barClass}" style="width:${amt===0?0:barPct}%"></div>
+        </div>
+        <div class="cc-stats">
+          <div class="cc-amount"><span class="cc-sgd">SGD </span>${amt.toFixed(2)}</div>
+          <div class="cc-right">
+            <div class="cc-txns">${cnt} txn${cnt!==1?'s':''}</div>
+            ${limitInfo}
+          </div>
+        </div>
+        ${milesSection}
+      `;
+      grid.appendChild(el);
+    });
+
+    ccGridWrap.innerHTML = '';
+    ccGridWrap.appendChild(grid);
+
+    // Update header miles total
+    if (anyMilesConfig) {
+      milesTotalWrap.style.display = 'flex';
+      milesTotalDisp.textContent = Math.floor(grandTotalMiles).toLocaleString();
+    } else {
+      milesTotalWrap.style.display = 'none';
+    }
+  }
+
+  // ── Table ──────────────────────────────────────────────
+
+  function renderRow(expense, index) {
+    const tr = document.createElement('tr');
+    const fxRate = expense.fxRate    ? parseFloat(expense.fxRate).toFixed(4)    : '—';
+    const amtSGD = expense.amountSGD ? parseFloat(expense.amountSGD).toFixed(2) : '—';
+    tr.innerHTML = `
+      <td class="timestamp">${formatDate(expense.timestamp)}</td>
+      <td class="amount">${parseFloat(expense.amount||0).toFixed(2)}</td>
+      <td class="muted">${expense.paymentMethod||'—'}</td>
+      <td>${categoryPill(expense.category)}</td>
+      <td style="max-width:150px;word-break:break-word">${expense.description||'<span style="color:#ccc">—</span>'}</td>
+      <td class="muted">${expense.currency && expense.currency!=='SGD' ? `<span style="color:var(--accent);font-weight:600">${expense.currency}</span>` : (expense.currency||'SGD')}</td>
+      <td class="muted" style="max-width:120px;word-break:break-word">${expense.remarks||'<span style="color:#ccc">—</span>'}</td>
+      <td class="muted">${fxRate}</td>
+      <td class="amount">$${amtSGD}</td>
+      <td><button class="delete-btn" title="Delete" onclick="deleteExpense(${index})">✕</button></td>
+    `;
+    return tr;
+  }
+
+  function render() {
+    tableBody.innerHTML = '';
+    const isEmpty = expenses.length === 0;
+    emptyState.style.display = isEmpty ? 'block' : 'none';
+    document.getElementById('expenseTable').style.display = isEmpty ? 'none' : 'table';
+
+    // Total uses ALL expenses
+    let total = 0;
+    expenses.forEach(exp => { total += parseFloat(exp.amountSGD || exp.amount) || 0; });
+    totalDisplay.textContent = total.toFixed(2);
+    countBadge.textContent = `${expenses.length} ${expenses.length===1?'entry':'entries'}`;
+
+    // Table shows only up to visibleCount
+    const toShow = expenses.slice(0, visibleCount);
+    toShow.forEach((exp, i) => tableBody.appendChild(renderRow(exp, i)));
+
+    // Load More button
+    const hasMore = expenses.length > visibleCount;
+    loadMoreWrap.style.display = hasMore ? 'block' : 'none';
+    if (hasMore) {
+      const remaining = expenses.length - visibleCount;
+      loadMoreBtn.textContent = `Load ${Math.min(remaining, PAGE_SIZE)} more (${remaining} remaining)`;
+    }
+
+    renderCCDashboard();
+  }
+
+  loadMoreBtn.addEventListener('click', () => {
+    visibleCount += PAGE_SIZE;
+    render();
+  });
+
+  // ── Sheets API ─────────────────────────────────────────
+
+  async function loadFromSheets() {
+    if (!config?.scriptUrl) return;
+    setSyncStatus('syncing', '↓ Loading…');
+    try {
+      const res  = await fetch(config.scriptUrl + '?cachebust=' + Date.now());
+      const json = await res.json();
+      if (json.status === 'ok') {
+        expenses = json.data.map(r => ({
+          timestamp: r.timestamp,
+          amount: r.amount, paymentMethod: r.paymentMethod, category: r.category,
+          description: r.description||'', currency: r.currency||'SGD',
+          remarks: r.remarks||'', fxRate: r.fxRate||'', amountSGD: r.amountSGD||''
+        }));
+        visibleCount = PAGE_SIZE;
+        render();
+        setSyncStatus('success', '✓ Loaded');
+      } else {
+        setSyncStatus('error', '✕ Load failed');
+        renderCCDashboard();
+      }
+    } catch (err) {
+      setSyncStatus('error', '✕ Cannot reach Sheets');
+      renderCCDashboard();
+    }
+  }
+
+  async function postToSheets(payload) {
+    if (!config?.scriptUrl) return;
+    setSyncStatus('syncing', '↑ Saving…');
+    try {
+      await fetch(config.scriptUrl, {
+        method: 'POST', mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      setSyncStatus('success', '✓ Saved');
+    } catch (err) {
+      setSyncStatus('error', '✕ Save failed');
+    }
+  }
+
+  // ── Event handlers ─────────────────────────────────────
+
+  async function deleteExpense(index) {
+    const removed = expenses[index];
+    expenses.splice(index, 1);
+    render();
+    await postToSheets({ action: 'delete', timestamp: removed.timestamp });
+  }
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const expense = {
+      timestamp:     formatTimestampForSheet(),
+      amount:        parseFloat(document.getElementById('amount').value).toFixed(2),
+      paymentMethod: document.getElementById('paymentMethod').value,
+      category:      document.getElementById('category').value,
+      description:   document.getElementById('description').value.trim(),
+      currency:      currencySelect.value,
+      remarks:       document.getElementById('remarks').value.trim(),
+    };
+
+    // Accumulate points for matching card
+    if (config?.creditCards) {
+      const amtSGD = parseFloat(expense.amount);
+      const card = config.creditCards.find(cc => cc.name === expense.paymentMethod);
+      if (card && card.dollarPerPoint > 0) {
+        card.currentPoints = (card.currentPoints || 0) + (amtSGD * card.dollarPerPoint);
+        saveConfig(config);
+      }
+    }
+
+    expenses.unshift(expense);
+    visibleCount = Math.max(visibleCount, PAGE_SIZE);
+    render();
+    form.reset();
+    currencySelect.value = 'SGD';
+    currencyNote.classList.remove('visible');
+    document.getElementById('amount').focus();
+    await postToSheets({ action: 'add', ...expense });
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', function() {
+    form.reset(); currencySelect.value = 'SGD'; currencyNote.classList.remove('visible');
+  });
+
+  document.getElementById('clearAllBtn').addEventListener('click', async function() {
+    if (!expenses.length) return;
+    if (confirm(`Delete all ${expenses.length} expense entries? This cannot be undone.`)) {
+      expenses = []; visibleCount = PAGE_SIZE; render();
+      await postToSheets({ action: 'clear' });
+    }
+  });
+
+  currencySelect.addEventListener('change', function() {
+    currencyNote.classList.toggle('visible', this.value !== 'SGD');
+  });
+
+  // ── Init ───────────────────────────────────────────────
+  if (!config) {
+    showOnboarding();
+  } else {
+    applyConfig();
+    loadFromSheets();
+  }
+</script>
+</body>
+</html>
