@@ -105,13 +105,13 @@
 
   .cc-row {
     display: grid;
-    grid-template-columns: 14px 1.4fr 0.8fr 72px 72px 72px 80px 44px 28px;
+    grid-template-columns: 14px 1.4fr 0.8fr 72px 64px 64px 52px 44px 28px;
     gap: 6px; align-items: center;
   }
 
   .cc-row-header {
     display: grid;
-    grid-template-columns: 14px 1.4fr 0.8fr 72px 72px 72px 80px 44px 28px;
+    grid-template-columns: 14px 1.4fr 0.8fr 72px 64px 64px 52px 44px 28px;
     gap: 6px; align-items: center;
     margin-bottom: 2px;
   }
@@ -139,13 +139,18 @@
   }
   .cc-row-del:hover { color: var(--danger); background: var(--danger-light); }
 
-  .add-cc-btn {
-    font-size: 0.77rem; font-weight: 600; color: var(--accent);
-    background: var(--accent-light); border: 1.5px dashed #e8a882;
-    border-radius: 7px; padding: 7px 12px; cursor: pointer;
-    width: 100%; margin-top: 5px; transition: background 0.15s;
+  .cc-add-row { margin-top: 8px; }
+
+  .cc-add-row .cc-picker {
+    background-color: var(--accent-light);
+    border-color: #e8a882;
+    color: var(--accent);
+    font-weight: 600;
   }
-  .add-cc-btn:hover { background: #f0ddd2; }
+
+  .cc-add-row .cc-picker:focus {
+    border-color: var(--accent);
+  }
 
   .setup-hint {
     font-size: 0.71rem; color: var(--text-muted); line-height: 1.5;
@@ -425,21 +430,88 @@
     th, td { padding: 8px 9px; }
     .modal-header, .modal-section { padding-left: 18px; padding-right: 18px; }
     .modal-footer { padding: 14px 18px 20px; }
-    .cc-row, .cc-row-header { grid-template-columns: 14px 1fr 60px 55px 55px 55px 65px 36px 24px; gap: 4px; }
+    .cc-row, .cc-row-header { grid-template-columns: 14px 1fr 60px 55px 55px 48px 36px 24px; gap: 4px; }
   }
 
   @media (max-width: 420px) {
     .form-grid { grid-template-columns: 1fr; }
     .cc-grid { grid-template-columns: 1fr; }
-    .cc-row, .cc-row-header { grid-template-columns: 14px 1fr 55px 50px 50px 36px 26px; }
-    .cc-bank-input, .cc-pts-mi-input { display: none; }
+    .cc-row, .cc-row-header { grid-template-columns: 14px 1fr 55px 50px 40px 26px; }
+    .cc-bank-input { display: none; }
   }
 
   @keyframes slideIn {
     from { opacity:0; transform: translateY(-5px); }
     to   { opacity:1; transform: none; }
   }
+  /* ─── Miles Calculator ───────────────────────────── */
+  .calc-rows { padding: 14px 22px 18px; display: flex; flex-direction: column; gap: 10px; }
+
+  .calc-row {
+    display: grid;
+    grid-template-columns: 1fr 130px 100px;
+    gap: 10px; align-items: center;
+  }
+
+  .calc-card-label {
+    font-size: 0.85rem; font-weight: 600; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .calc-card-bank {
+    font-size: 0.69rem; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.05em; margin-top: 1px;
+  }
+
+  .calc-pts-input {
+    padding: 8px 10px; border: 1.5px solid var(--border);
+    border-radius: 7px; font-family: var(--font-body); font-size: 0.88rem;
+    color: var(--text); background: var(--surface); width: 100%;
+    transition: border-color 0.15s;
+    appearance: none; -webkit-appearance: none;
+  }
+  .calc-pts-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(200,96,42,0.1); }
+  .calc-pts-input::placeholder { color: #bbb7b0; }
+
+  .calc-miles-out {
+    font-family: var(--font-display); font-size: 1rem; color: var(--accent);
+    text-align: right; white-space: nowrap;
+  }
+  .calc-miles-out .calc-unit { font-size: 0.62em; color: var(--text-muted); margin-left: 2px; }
+
+  .calc-divider {
+    border: none; border-top: 1px dashed var(--border); margin: 4px 0 0;
+  }
+
+  .calc-pool-label {
+    font-size: 0.69rem; color: var(--text-muted); font-style: italic;
+    grid-column: 1; padding-left: 2px;
+  }
+
+  .miles-calc-total {
+    display: flex; align-items: baseline; gap: 5px;
+  }
+  .miles-calc-total-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .miles-calc-total-value { font-family: var(--font-display); font-size: 1.4rem; color: var(--accent); }
+  .miles-calc-total-unit  { font-size: 0.72rem; color: var(--text-muted); }
+
+  .calc-empty { padding: 28px 22px; text-align: center; color: var(--text-muted); font-size: 0.85rem; font-style: italic; }
+
+  @media (max-width: 600px) {
+    .calc-row { grid-template-columns: 1fr 110px 90px; gap: 8px; }
+    .calc-rows { padding: 12px 15px 16px; }
+  }
+  @media (max-width: 420px) {
+    .calc-row { grid-template-columns: 1fr 100px 80px; }
+  }
+
   tbody tr { animation: slideIn 0.18s ease; }
+
+  .cc-mpd-display {
+    font-size: 0.68rem; font-weight: 700; color: var(--accent);
+    text-align: center; letter-spacing: 0.03em;
+  }
+
 </style>
 </head>
 <body>
@@ -470,10 +542,14 @@
     <div class="modal-section" style="margin-top:16px;">
       <div class="modal-section-title">Credit Cards — for spending dashboard</div>
       <div class="cc-row-header">
-        <span></span><span>Card name</span><span>Bank</span><span>Limit (SGD)</span><span>pt/$</span><span>pt/mile</span><span>Cur. pts</span><span>Pool?</span><span></span>
+        <span></span><span>Card name</span><span>Bank</span><span>Bonus cap</span><span>pts/$</span><span>pt/mile</span><span>MPD</span><span>Pool?</span><span></span>
       </div>
       <div class="cc-rows" id="ob-ccRows"></div>
-      <button class="add-cc-btn" id="ob-addCcBtn">+ Add credit card</button>
+      <div class="cc-add-row">
+        <select class="setup-input cc-picker" id="ob-ccPicker">
+          <option value="">+ Add a credit card…</option>
+        </select>
+      </div>
     </div>
 
     <div class="modal-footer">
@@ -506,10 +582,14 @@
     <div class="modal-section" style="margin-top:16px;">
       <div class="modal-section-title">Credit Cards</div>
       <div class="cc-row-header">
-        <span></span><span>Card name</span><span>Bank</span><span>Limit (SGD)</span><span>pt/$</span><span>pt/mile</span><span>Cur. pts</span><span>Pool?</span><span></span>
+        <span></span><span>Card name</span><span>Bank</span><span>Bonus cap</span><span>pts/$</span><span>pt/mile</span><span>MPD</span><span>Pool?</span><span></span>
       </div>
       <div class="cc-rows" id="st-ccRows"></div>
-      <button class="add-cc-btn" id="st-addCcBtn">+ Add credit card</button>
+      <div class="cc-add-row">
+        <select class="setup-input cc-picker" id="st-ccPicker">
+          <option value="">+ Add a credit card…</option>
+        </select>
+      </div>
     </div>
 
     <div class="modal-footer">
@@ -534,10 +614,6 @@
   <div class="total-bar">
     <div class="total-label">Total (SGD)</div>
     <div class="total-amount"><span>$</span><span id="totalDisplay">0.00</span></div>
-    <div class="miles-total" id="milesTotalWrap" style="display:none">
-      <div class="miles-total-label">Miles</div>
-      <div class="miles-total-value"><span>✈</span><span id="milesTotalDisplay">0</span></div>
-    </div>
     <span id="syncStatus" class="sync-status"></span>
   </div>
 </header>
@@ -628,6 +704,23 @@
     <div id="ccGridWrap"></div>
   </div>
 
+  <!-- ── Miles Calculator ── -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Miles Calculator</div>
+        <div class="card-subtitle">Enter your current points balance per card to see total miles</div>
+      </div>
+      <div class="miles-calc-total" id="calcTotalWrap" style="display:none">
+        <span class="miles-calc-total-label">✈ Total</span>
+        <span class="miles-calc-total-value" id="calcTotalDisplay">0</span>
+        <span class="miles-calc-total-unit">mi</span>
+      </div>
+    </div>
+    <div id="calcRows" class="calc-rows"></div>
+    <div class="calc-empty" id="calcEmpty">Configure credit cards in ⚙ Settings to use the calculator.</div>
+  </div>
+
   <!-- ── Entries Table ── -->
   <div class="card">
     <div class="card-header">
@@ -672,6 +765,72 @@
   const PAGE_SIZE  = 10;
   const CARD_COLORS = ['#b03a2e','#c0392b','#8e44ad','#6c3483','#1a5276','#1e8449','#b7770d','#117a65','#7d6608','#0e6655'];
 
+  // Singapore miles credit card database
+  // dollarPerPoint = effective KrisFlyer miles per SGD spent (bonus rate where applicable)
+  // pointsPerMile  = 1 (miles are the unit; rates already expressed as mpd to KrisFlyer)
+  // bonusCap = monthly SGD bonus spend cap (0 = uncapped or no bonus category)
+  // Sources: MileLion credit card guide, Jan-Feb 2026. Bonus rates used where available.
+  const SG_CARDS = [
+    // ── Citibank ──────────────────────────────────────────────────────────────
+    // Prestige: 1.3 mpd local (uncapped). Rewards: 4 mpd online/shopping, cap $1,000/s.month
+    { name: 'Citi Prestige',              bank: 'Citibank',           ptsDollar: 1.3,  ptsMile:    1, bonusCap: 0,     pooled: false },
+    { name: 'Citi PremierMiles',          bank: 'Citibank',           ptsDollar: 1.2,  ptsMile:    1, bonusCap: 0,     pooled: false },
+    { name: 'Citi Rewards',               bank: 'Citibank',           ptsDollar: 4,    ptsMile:    1, bonusCap: 1000,  pooled: false },
+
+    // ── DBS ───────────────────────────────────────────────────────────────────
+    // Altitude: 1.3 mpd local uncapped. WWMC: 4 mpd online, cap $1,500/s.month. Vantage: 1.5 mpd
+    { name: 'DBS Altitude Visa',          bank: 'DBS',                ptsDollar: 1.3,  ptsMile:    1, bonusCap: 0,     pooled: false },
+    { name: "DBS Woman's World",          bank: 'DBS',                ptsDollar: 4,    ptsMile:    1, bonusCap: 1000,  pooled: false },
+    { name: 'DBS Vantage',                bank: 'DBS',                ptsDollar: 1.5,  ptsMile:    1, bonusCap: 0,     pooled: false },
+
+    // ── UOB ───────────────────────────────────────────────────────────────────
+    // PRVI: 1.4 mpd local. KrisFlyer UOB: 1.2 mpd local (3 mpd on SIA/Scoot, uncapped)
+    // Lady's Solitaire: 4 mpd on chosen categories, $750/c.month per category ($1,500 total)
+    // Lady's Card: 4 mpd on chosen category, cap $1,000/c.month
+    // PPV: 4 mpd on mobile contactless + selected online, $600/c.month per sub-cap ($1,200 total)
+    // Visa Signature: 4 mpd on FCY + online, cap $1,000/s.month
+    { name: 'UOB PRVI Miles',             bank: 'UOB',                ptsDollar: 1.4,  ptsMile:    1, bonusCap: 0,     pooled: false },
+    { name: 'KrisFlyer UOB',              bank: 'UOB',                ptsDollar: 1.2,  ptsMile:    1, bonusCap: 0,     pooled: false },
+    { name: "UOB Lady's Solitaire",       bank: 'UOB',                ptsDollar: 4,    ptsMile:    1, bonusCap: 1500,  pooled: false },
+    { name: "UOB Lady's Card",            bank: 'UOB',                ptsDollar: 4,    ptsMile:    1, bonusCap: 1000,  pooled: false },
+    { name: 'UOB Preferred Platinum',     bank: 'UOB',                ptsDollar: 4,    ptsMile:    1, bonusCap: 1200,  pooled: false },
+    { name: 'UOB Visa Signature',         bank: 'UOB',                ptsDollar: 4,    ptsMile:    1, bonusCap: 1000,  pooled: false },
+
+    // ── HSBC ──────────────────────────────────────────────────────────────────
+    // Post Jan 2025 devaluation: HSBC pts convert to KF at 30,000:10,000
+    // Revolution: earns 10 pts/$1 on bonus = effective ~3.33 mpd to KF, cap $1,500/c.month
+    // TravelOne: 1.2 mpd local (but only 1 mpd to KF after devaluation)
+    // Premier MC: 1.68 mpd local (but ~1.4 mpd to KF after devaluation)
+    // Note: MileLion advises HSBC pts better used for non-KF partners
+    { name: 'HSBC Revolution',            bank: 'HSBC',               ptsDollar: 3.33, ptsMile:    1, bonusCap: 1500,  pooled: false },
+    { name: 'HSBC TravelOne',             bank: 'HSBC',               ptsDollar: 1,    ptsMile:    1, bonusCap: 0,     pooled: false },
+    { name: 'HSBC Premier Mastercard',    bank: 'HSBC',               ptsDollar: 1.4,  ptsMile:    1, bonusCap: 0,     pooled: false },
+
+    // ── OCBC ──────────────────────────────────────────────────────────────────
+    // 90N: 1.3 mpd local, KF 1:1. Rewards: 4 mpd on bonus categories (up to 6 mpd promo), cap $1,110/c.month. VOYAGE: 1.3 mpd
+    { name: 'OCBC 90°N Mastercard',       bank: 'OCBC',               ptsDollar: 1.3,  ptsMile:    1, bonusCap: 0,     pooled: false },
+    { name: 'OCBC Rewards',               bank: 'OCBC',               ptsDollar: 4,    ptsMile:    1, bonusCap: 1110,  pooled: false },
+    { name: 'OCBC VOYAGE',                bank: 'OCBC',               ptsDollar: 1.3,  ptsMile:    1, bonusCap: 0,     pooled: false },
+
+    // ── Standard Chartered ────────────────────────────────────────────────────
+    // Journey: 1.2 mpd local. Visa Infinite: 1.4 mpd (min $2K total spend/s.month)
+    { name: 'SCB Journey',                bank: 'Standard Chartered', ptsDollar: 1.2,  ptsMile:    1, bonusCap: 0,     pooled: false },
+    { name: 'SCB Visa Infinite',          bank: 'Standard Chartered', ptsDollar: 1.4,  ptsMile:    1, bonusCap: 0,     pooled: false },
+
+    // ── American Express ──────────────────────────────────────────────────────
+    // KrisFlyer cobrand cards earn KF miles directly
+    // Platinum Charge: 1.5 mpd local (MR pts at 450:250 to KF = effective 0.83 mpd; but via preferential rate 400:250 = 0.94 mpd)
+    { name: 'Amex KrisFlyer',             bank: 'American Express',   ptsDollar: 1.1,  ptsMile:    1, bonusCap: 0,     pooled: false },
+    { name: 'Amex KrisFlyer Ascend',      bank: 'American Express',   ptsDollar: 1.2,  ptsMile:    1, bonusCap: 0,     pooled: false },
+    { name: 'Amex Platinum Charge',       bank: 'American Express',   ptsDollar: 0.83, ptsMile:    1, bonusCap: 0,     pooled: false },
+
+    // ── Maybank ───────────────────────────────────────────────────────────────
+    // Horizon: 2.8 mpd on air tickets, cap $10,000/c.month. VI: 1.2 mpd. World MC: 1.2 mpd
+    { name: 'Maybank Horizon Visa',       bank: 'Maybank',            ptsDollar: 2.8,  ptsMile:    1, bonusCap: 10000, pooled: false },
+    { name: 'Maybank Visa Infinite',      bank: 'Maybank',            ptsDollar: 1.2,  ptsMile:    1, bonusCap: 0,     pooled: false },
+    { name: 'Maybank World Mastercard',   bank: 'Maybank',            ptsDollar: 1.2,  ptsMile:    1, bonusCap: 0,     pooled: false },
+  ];
+
   function loadConfig() { try { return JSON.parse(localStorage.getItem(CFG_KEY)) || null; } catch { return null; } }
   function saveConfig(c) { localStorage.setItem(CFG_KEY, JSON.stringify(c)); }
 
@@ -692,62 +851,122 @@
   const ccMonthLabel   = document.getElementById('ccMonthLabel');
   const loadMoreWrap   = document.getElementById('loadMoreWrap');
   const loadMoreBtn    = document.getElementById('loadMoreBtn');
-  const milesTotalWrap = document.getElementById('milesTotalWrap');
-  const milesTotalDisp = document.getElementById('milesTotalDisplay');
 
   // ── Settings / Onboarding helpers ─────────────────────
 
   function buildCCRows(containerId, cards) {
     const c = document.getElementById(containerId);
     c.innerHTML = '';
-    (cards||[]).forEach((cc, i) => c.appendChild(makeCCRow(containerId, cc.name, cc.bank, cc.limit, cc.dollarPerPoint, cc.pointsPerMile, cc.currentPoints, cc.pooled, cc.color, i)));
+    (cards||[]).forEach((cc, i) => c.appendChild(makeCCRow(containerId, cc.name, cc.bank, cc.limit, cc.ptsDollar||0, cc.ptsMile||0, cc.pooled, cc.color, i)));
   }
 
-  function makeCCRow(containerId, name, bank, limit, dollarPerPoint, pointsPerMile, currentPoints, pooled, color, index) {
+  function makeCCRow(containerId, name, bank, limit, ptsDollar, ptsMile, pooled, color, index) {
     const row = document.createElement('div');
     row.className = 'cc-row';
     row.innerHTML = `
       <div class="cc-swatch" style="background:${color||CARD_COLORS[index%CARD_COLORS.length]}"></div>
-      <input class="setup-input cc-name-input"   type="text"   placeholder="Card name"  value="${name||''}">
-      <input class="setup-input cc-bank-input"   type="text"   placeholder="Bank"       value="${bank||''}">
+      <input class="setup-input cc-name-input"   type="text"   placeholder="Card name"  value="${(name||'').replace(/"/g,'&quot;')}">
+      <input class="setup-input cc-bank-input"   type="text"   placeholder="Bank"       value="${(bank||'').replace(/"/g,'&quot;')}">
       <input class="setup-input cc-limit-input"  type="number" placeholder="No limit"   min="0" step="1"      value="${limit||''}">
-      <input class="setup-input cc-dpp-input"    type="number" placeholder="e.g. 4"     min="0" step="0.01"   value="${dollarPerPoint||''}">
-      <input class="setup-input cc-pts-mi-input" type="number" placeholder="e.g. 400"   min="0" step="1"      value="${pointsPerMile||''}">
-      <input class="setup-input cc-curpts-input" type="number" placeholder="0"          min="0" step="1"      value="${currentPoints||''}">
+      <input class="setup-input cc-ptsdollar-input" type="number" placeholder="e.g. 5" min="0" step="0.01"   value="${ptsDollar||''}">
+      <input class="setup-input cc-ptsmi-input"  type="number" placeholder="e.g. 400"  min="0" step="1"      value="${ptsMile||''}">
+      <div class="cc-mpd-display" title="MPD = pts/$ ÷ pt/mile"></div>
       <div class="cc-pool-wrap"><input type="checkbox" class="cc-pool-input" title="Pool points with same bank" ${pooled ? 'checked' : ''}></div>
       <button type="button" class="cc-row-del" title="Remove">✕</button>
     `;
     row.querySelector('.cc-row-del').addEventListener('click', () => row.remove());
+
+    // Live MPD calculation
+    function updateMPD() {
+      const pts = parseFloat(row.querySelector('.cc-ptsdollar-input').value) || 0;
+      const mi  = parseFloat(row.querySelector('.cc-ptsmi-input').value)     || 0;
+      const mpd = (pts > 0 && mi > 0) ? (pts / mi).toFixed(2) : '—';
+      const el  = row.querySelector('.cc-mpd-display');
+      el.textContent = mpd === '—' ? '—' : mpd + ' mpd';
+    }
+    row.querySelector('.cc-ptsdollar-input').addEventListener('input', updateMPD);
+    row.querySelector('.cc-ptsmi-input').addEventListener('input', updateMPD);
+    updateMPD();
+
     return row;
   }
 
-  function addCCRow(containerId) {
+  function addCCRow(containerId, preset) {
     const c = document.getElementById(containerId);
     const i = c.querySelectorAll('.cc-row').length;
-    c.appendChild(makeCCRow(containerId, '', '', '', '', '', '', false, CARD_COLORS[i % CARD_COLORS.length], i));
+    const p = preset || {};
+    c.appendChild(makeCCRow(
+      containerId,
+      p.name     || '',
+      p.bank     || '',
+      p.bonusCap || 0,
+      p.ptsDollar || (p.dollarPerPoint ? (p.dollarPerPoint > 1 ? p.dollarPerPoint : 0) : 0),
+      p.ptsMile  || 0,
+      false,
+      CARD_COLORS[i % CARD_COLORS.length],
+      i
+    ));
   }
 
   function readCCRows(containerId) {
     return [...document.getElementById(containerId).querySelectorAll('.cc-row')]
       .map((row, i) => ({
-        name:          row.querySelector('.cc-name-input').value.trim(),
-        bank:          row.querySelector('.cc-bank-input').value.trim(),
-        limit:         parseFloat(row.querySelector('.cc-limit-input').value)  || 0,
-        dollarPerPoint:parseFloat(row.querySelector('.cc-dpp-input').value)    || 0,
-        pointsPerMile: parseFloat(row.querySelector('.cc-pts-mi-input').value) || 0,
-        currentPoints: parseFloat(row.querySelector('.cc-curpts-input').value) || 0,
-        pooled:        row.querySelector('.cc-pool-input').checked,
-        color:         CARD_COLORS[i % CARD_COLORS.length]
+        name:      row.querySelector('.cc-name-input').value.trim(),
+        bank:      row.querySelector('.cc-bank-input').value.trim(),
+        limit:     parseFloat(row.querySelector('.cc-limit-input').value)      || 0,
+        ptsDollar: parseFloat(row.querySelector('.cc-ptsdollar-input').value)  || 0,
+        ptsMile:   parseFloat(row.querySelector('.cc-ptsmi-input').value)      || 0,
+        pooled:    row.querySelector('.cc-pool-input').checked,
+        color:     CARD_COLORS[i % CARD_COLORS.length]
       }))
       .filter(cc => cc.name);
   }
 
+  function initCCPicker(pickerId, containerId) {
+    const picker = document.getElementById(pickerId);
+    picker.innerHTML = '<option value="">+ Add a credit card…</option>';
+
+    // Group known cards by bank
+    const banks = {};
+    SG_CARDS.forEach(c => {
+      if (!banks[c.bank]) banks[c.bank] = [];
+      banks[c.bank].push(c);
+    });
+    Object.entries(banks).forEach(([bank, cards]) => {
+      const og = document.createElement('optgroup');
+      og.label = bank;
+      cards.forEach(card => {
+        const opt = document.createElement('option');
+        opt.value = card.name;
+        opt.textContent = card.name;
+        og.appendChild(opt);
+      });
+      picker.appendChild(og);
+    });
+
+    // Custom entry option
+    const customOg = document.createElement('optgroup');
+    customOg.label = '──────────────';
+    const customOpt = document.createElement('option');
+    customOpt.value = '__custom__';
+    customOpt.textContent = 'Other / enter manually';
+    customOg.appendChild(customOpt);
+    picker.appendChild(customOg);
+
+    picker.addEventListener('change', function() {
+      if (!this.value) return;
+      const preset = this.value === '__custom__' ? null : SG_CARDS.find(c => c.name === this.value);
+      addCCRow(containerId, preset);
+      this.value = '';
+    });
+  }
+
   function showOnboarding() {
     buildCCRows('ob-ccRows', []);
+    initCCPicker('ob-ccPicker', 'ob-ccRows');
     document.getElementById('onboardingOverlay').classList.add('active');
   }
 
-  document.getElementById('ob-addCcBtn').addEventListener('click', () => addCCRow('ob-ccRows'));
   document.getElementById('ob-saveBtn').addEventListener('click', () => {
     const url     = document.getElementById('ob-scriptUrl').value.trim();
     const sheetId = document.getElementById('ob-sheetId').value.trim();
@@ -764,10 +983,9 @@
     document.getElementById('st-scriptUrl').value = config?.scriptUrl || '';
     document.getElementById('st-sheetId').value   = config?.sheetId   || '';
     buildCCRows('st-ccRows', config?.creditCards || []);
+    initCCPicker('st-ccPicker', 'st-ccRows');
     document.getElementById('settingsOverlay').classList.add('active');
   });
-
-  document.getElementById('st-addCcBtn').addEventListener('click', () => addCCRow('st-ccRows'));
   document.getElementById('st-cancelBtn').addEventListener('click', () => {
     document.getElementById('settingsOverlay').classList.remove('active');
   });
@@ -819,6 +1037,7 @@
       o.value = m; o.textContent = m; og.appendChild(o);
     });
     pmEl.appendChild(og);
+    renderCalc();
   }
 
   // ── Utilities ─────────────────────────────────────────
@@ -879,7 +1098,6 @@
     const cards = config?.creditCards || [];
     if (!cards.length) {
       ccGridWrap.innerHTML = '<div class="cc-empty-msg">No credit cards configured. Open ⚙ Settings to add your cards.</div>';
-      milesTotalWrap.style.display = 'none';
       return;
     }
 
@@ -902,20 +1120,15 @@
       }
     });
 
-    // Pre-compute per-card individual points and pooled bank totals
-    // pooled: bank -> { totalPoints, pointsPerMile }
-    const bankPools = {};  // bank -> { totalPts, ppm }
+    // Pre-compute pooled bank totals (spend-based only, no current points)
+    const bankPools = {};
     cards.forEach(cc => {
-      const dpp = cc.dollarPerPoint || 0;
-      const ppm = cc.pointsPerMile  || 0;
-      const base= cc.currentPoints  || 0;
-      const earned = dpp > 0 ? allTimeTotals[cc.name] * dpp : 0;
-      const cardPts = base + earned;
-
+      const pts = cc.ptsDollar || 0;
+      const pmi = cc.ptsMile   || 0;
+      const earnedMiles = (pts > 0 && pmi > 0) ? (allTimeTotals[cc.name] * pts) / pmi : 0;
       if (cc.pooled && cc.bank) {
-        if (!bankPools[cc.bank]) bankPools[cc.bank] = { totalPts: 0, ppm: ppm };
-        bankPools[cc.bank].totalPts += cardPts;
-        if (ppm > 0) bankPools[cc.bank].ppm = ppm; // use last defined ppm for bank
+        if (!bankPools[cc.bank]) bankPools[cc.bank] = { totalMiles: 0 };
+        bankPools[cc.bank].totalMiles += earnedMiles;
       }
     });
 
@@ -925,7 +1138,7 @@
 
     let grandTotalMiles = 0;
     let anyMilesConfig  = false;
-    const countedBankPools = new Set(); // track which banks already counted for grand total
+    const countedBankPools = new Set();
 
     cards.forEach(cc => {
       const amt   = totals[cc.name];
@@ -948,48 +1161,36 @@
         limitInfo = `<div class="cc-limit-info ok">No limit set</div>`;
       }
 
-      // ── Miles calculation ──
-      const dpp  = cc.dollarPerPoint || 0;
-      const ppm  = cc.pointsPerMile  || 0;
-      const base = cc.currentPoints  || 0;
+      // ── Miles from tracked spend ──
+      const pts = cc.ptsDollar || 0;
+      const pmi = cc.ptsMile   || 0;
 
       let milesSection = '';
-      if (dpp > 0 && ppm > 0) {
+      if (pts > 0 && pmi > 0) {
         anyMilesConfig = true;
-        const earned     = allTimeTotals[cc.name] * dpp;
-        const cardPts    = base + earned;
-        const cardMiles  = cardPts / ppm;
+        const earned    = allTimeTotals[cc.name] * pts;
+        const cardMiles = earned / pmi;
 
-        // Individual card miles
         milesSection = `
           <div class="cc-miles-divider"></div>
           <div class="cc-miles-row">
-            <div class="cc-miles-label">✈ Card miles</div>
+            <div class="cc-miles-label">✈ Miles from spend</div>
             <div class="cc-miles-value">${Math.floor(cardMiles).toLocaleString()}<span class="cc-miles-unit">mi</span></div>
-          </div>
-          <div class="cc-pts-row">
-            <div class="cc-pts-label">${Math.floor(cardPts).toLocaleString()} pts</div>
-            <div class="cc-pts-value">+${Math.floor(earned).toLocaleString()} earned</div>
           </div>
         `;
 
-        // Pooled bank total (show on each card in the pool, count miles once for grand total)
+        // Pooled bank total
         if (cc.pooled && cc.bank && bankPools[cc.bank]) {
-          const pool = bankPools[cc.bank];
-          const poolMiles = pool.ppm > 0 ? pool.totalPts / pool.ppm : 0;
+          const poolMiles = bankPools[cc.bank].totalMiles || 0;
           milesSection += `
             <div class="cc-pool-total">
               <div class="cc-pool-badge">⟳ ${cc.bank} pool</div>
               <div class="cc-pool-total-row" style="margin-top:4px">
-                <div class="cc-pool-total-label">✈ Pooled miles</div>
+                <div class="cc-pool-total-label">✈ Pooled miles from spend</div>
                 <div class="cc-pool-total-value">${Math.floor(poolMiles).toLocaleString()} mi</div>
-              </div>
-              <div class="cc-pts-row">
-                <div class="cc-pts-label">${Math.floor(pool.totalPts).toLocaleString()} pts combined</div>
               </div>
             </div>
           `;
-          // Add pooled miles to grand total once per bank
           if (!countedBankPools.has(cc.bank)) {
             grandTotalMiles += poolMiles;
             countedBankPools.add(cc.bank);
@@ -997,14 +1198,6 @@
         } else {
           grandTotalMiles += cardMiles;
         }
-
-      } else if (dpp > 0 || ppm > 0) {
-        milesSection = `
-          <div class="cc-miles-divider"></div>
-          <div class="cc-pts-row">
-            <div class="cc-pts-label" style="color:var(--text-muted);font-style:italic">Set both pt/$ and pt/mile in Settings</div>
-          </div>
-        `;
       }
 
       const el = document.createElement('div');
@@ -1031,16 +1224,128 @@
     ccGridWrap.innerHTML = '';
     ccGridWrap.appendChild(grid);
 
-    // Header miles total
-    if (anyMilesConfig) {
-      milesTotalWrap.style.display = 'flex';
-      milesTotalDisp.textContent = Math.floor(grandTotalMiles).toLocaleString();
-    } else {
-      milesTotalWrap.style.display = 'none';
-    }
+    // (Miles total shown in calculator card instead)
   }
 
-  // ── Table ──────────────────────────────────────────────
+  // ── Miles Calculator ───────────────────────────────
+
+  function renderCalc() {
+    const cards    = config?.creditCards || [];
+    const calcRows = document.getElementById('calcRows');
+    const calcEmpty= document.getElementById('calcEmpty');
+    const totalWrap= document.getElementById('calcTotalWrap');
+
+    if (!cards.length || !cards.some(cc => cc.ptsDollar > 0 && cc.ptsMile > 0)) {
+      calcRows.innerHTML = '';
+      calcEmpty.style.display = 'block';
+      totalWrap.style.display = 'none';
+      return;
+    }
+    calcEmpty.style.display = 'none';
+
+    // Group pooled cards by bank
+    const poolBanks = {};
+    cards.forEach(cc => {
+      if (cc.pooled && cc.bank && cc.ptsDollar > 0 && cc.ptsMile > 0) {
+        if (!poolBanks[cc.bank]) poolBanks[cc.bank] = [];
+        poolBanks[cc.bank].push(cc.name);
+      }
+    });
+
+    calcRows.innerHTML = '';
+    let grandTotal = 0;
+
+    cards.forEach((cc, idx) => {
+      if (!cc.ptsDollar || !cc.ptsMile) return;
+
+      const savedPts = parseFloat(calcRows.dataset['pts_' + idx] || 0);
+      const row = document.createElement('div');
+      row.className = 'calc-row';
+      row.dataset.idx = idx;
+
+      row.innerHTML = `
+        <div>
+          <div class="calc-card-label">${cc.name}</div>
+          <div class="calc-card-bank">${cc.bank || ''}</div>
+        </div>
+        <input class="calc-pts-input" type="number" min="0" step="1"
+          placeholder="Enter points" value="">
+        <div class="calc-miles-out">—<span class="calc-unit">mi</span></div>
+      `;
+
+      const input  = row.querySelector('.calc-pts-input');
+      const output = row.querySelector('.calc-miles-out');
+
+      input.addEventListener('input', () => {
+        const pts   = parseFloat(input.value) || 0;
+        const miles = pts / cc.ptsMile;
+        output.innerHTML = pts > 0
+          ? `${Math.floor(miles).toLocaleString()}<span class="calc-unit">mi</span>`
+          : `—<span class="calc-unit">mi</span>`;
+        recalcTotal();
+      });
+
+      calcRows.appendChild(row);
+    });
+
+    // Pool summary rows
+    Object.entries(poolBanks).forEach(([bank, cardNames]) => {
+      if (cardNames.length < 2) return;
+      const divRow = document.createElement('div');
+      divRow.className = 'calc-row';
+      divRow.style.opacity = '0.7';
+      divRow.innerHTML = `
+        <div class="calc-pool-label" style="grid-column:1/4">
+          ⟳ ${bank} pool — enter points on individual cards above to see combined total
+        </div>
+      `;
+      calcRows.appendChild(divRow);
+    });
+
+    totalWrap.style.display = 'flex';
+    recalcTotal();
+  }
+
+  function recalcTotal() {
+    const cards  = config?.creditCards || [];
+    const inputs = document.querySelectorAll('#calcRows .calc-pts-input');
+    const countedBanks = new Set();
+    let total = 0;
+    let ci = 0;
+
+    cards.forEach(cc => {
+      if (!cc.ptsDollar || !cc.ptsMile) return;
+      const input = inputs[ci++];
+      if (!input) return;
+      const pts   = parseFloat(input.value) || 0;
+      const miles = pts / cc.ptsMile;
+
+      if (cc.pooled && cc.bank) {
+        // collect pooled; sum once after
+      } else {
+        total += miles;
+      }
+    });
+
+    // Pooled: sum raw pts per bank then convert
+    const bankPts = {};
+    ci = 0;
+    cards.forEach(cc => {
+      if (!cc.ptsDollar || !cc.ptsMile) return;
+      const input = inputs[ci++];
+      if (!input) return;
+      if (cc.pooled && cc.bank) {
+        bankPts[cc.bank] = bankPts[cc.bank] || { pts: 0, pmi: cc.ptsMile };
+        bankPts[cc.bank].pts += parseFloat(input.value) || 0;
+      }
+    });
+    Object.values(bankPts).forEach(b => { total += b.pts / b.pmi; });
+
+    const display = document.getElementById('calcTotalDisplay');
+    if (display) display.textContent = Math.floor(total).toLocaleString();
+  }
+
+
 
   function renderRow(expense, index) {
     const tr = document.createElement('tr');
@@ -1160,16 +1465,6 @@
       currency:      currencySelect.value,
       remarks:       document.getElementById('remarks').value.trim(),
     };
-
-    // Accumulate points for matching card
-    if (config?.creditCards) {
-      const amtSGD = parseFloat(expense.amount);
-      const card = config.creditCards.find(cc => cc.name === expense.paymentMethod);
-      if (card && card.dollarPerPoint > 0) {
-        card.currentPoints = (card.currentPoints || 0) + (amtSGD * card.dollarPerPoint);
-        saveConfig(config);
-      }
-    }
 
     expenses.unshift(expense);
     expenses.sort((a, b) => {
