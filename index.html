@@ -1,9 +1,18 @@
+<!--
+  Tally — Personal Expense Tracker
+  Built by weihenheng
+  https://github.com/weihenheng
+
+  Licensed for personal use only.
+  Not for resale or redistribution.
+  © weihenheng. All rights reserved.
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Homey — Shared Expense Tracker</title>
+<title>Tally — Personal Expense Tracker</title>
 <style>
   :root {
     --bg: #f5f4f0;
@@ -507,6 +516,23 @@
 
   tbody tr { animation: slideIn 0.18s ease; }
 
+  /* ─── Footer ─────────────────────────────────── */
+  .site-footer {
+    text-align: center;
+    padding: 32px 16px 20px;
+    font-size: 0.72rem;
+    color: #bbb7b0;
+    letter-spacing: 0.03em;
+  }
+  .site-footer a {
+    color: #bbb7b0;
+    text-decoration: none;
+    border-bottom: 1px solid #ddd9d0;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .site-footer a:hover { color: var(--accent); border-color: var(--accent); }
+  .site-footer .sep { margin: 0 6px; opacity: 0.5; }
+
   .cc-mpd-display {
     font-size: 0.68rem; font-weight: 700; color: var(--accent);
     text-align: center; letter-spacing: 0.03em;
@@ -520,7 +546,7 @@
 <div class="overlay" id="onboardingOverlay">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-logo">Home<span>y</span></div>
+      <div class="modal-logo">Tall<span>y</span></div>
       <div class="modal-tagline">Shared expense tracking · Syncs to Google Sheets · Yours forever</div>
     </div>
 
@@ -562,7 +588,7 @@
 <div class="overlay" id="settingsOverlay">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-logo">Home<span>y</span> — Settings</div>
+      <div class="modal-logo">Tall<span>y</span> — Settings</div>
     </div>
 
     <div class="modal-section" style="margin-top:16px;">
@@ -603,7 +629,7 @@
 <header>
   <div class="header-top">
     <div>
-      <h1>Home<span>y</span></h1>
+      <h1>Tall<span>y</span></h1>
       <div class="tagline">Shared expense tracker · syncs to Google Sheets</div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
@@ -760,8 +786,40 @@
 
 </div>
 
+<footer class="site-footer">
+  Tally · Built by <a href="https://github.com/weihenheng" target="_blank" rel="noopener">weihenheng</a>
+  <span class="sep">·</span>
+  <a href="#" onclick="document.getElementById('licenseOverlay').classList.add('active');return false;">License</a>
+</footer>
+
+<!-- ── License Overlay ── -->
+<div class="overlay" id="licenseOverlay">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header" style="padding-bottom:16px;">
+      <div class="modal-logo">Tall<span style="color:var(--accent)">y</span></div>
+      <div class="modal-tagline">Tally · Personal Expense Tracker · Built by weihenheng</div>
+    </div>
+    <div class="modal-section" style="margin-top:12px;padding-bottom:20px;">
+      <div class="modal-section-title">License</div>
+      <p style="font-size:0.88rem;color:#1a1814;line-height:1.7;margin-top:8px;">
+        This software is licensed for <strong>personal use only</strong>.
+      </p>
+      <ul style="font-size:0.85rem;color:#7a756a;line-height:1.8;margin:10px 0 0 18px;">
+        <li>You may use this for your own personal expense tracking.</li>
+        <li>You may not resell, sublicense, or redistribute this software.</li>
+        <li>You may not offer this as a service or product to others.</li>
+        <li>Modifications for personal use are permitted.</li>
+      </ul>
+      <p style="font-size:0.8rem;color:#aaa;margin-top:14px;">© Tally by weihenheng. All rights reserved.</p>
+    </div>
+    <div class="modal-footer" style="padding-top:0;">
+      <button class="btn-secondary" onclick="document.getElementById('licenseOverlay').classList.remove('active')">Close</button>
+    </div>
+  </div>
+</div>
+
 <script>
-  const CFG_KEY    = 'homey_config_v1';
+  const CFG_KEY    = 'tally_config_v1';
   const PAGE_SIZE  = 10;
   const CARD_COLORS = ['#b03a2e','#c0392b','#8e44ad','#6c3483','#1a5276','#1e8449','#b7770d','#117a65','#7d6608','#0e6655'];
 
