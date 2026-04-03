@@ -42,6 +42,28 @@
     --glow:          0 0 0 1px rgba(200,96,42,0.3), 0 4px 24px rgba(200,96,42,0.08);
   }
 
+  [data-theme="light"] {
+    --bg:            #f5f3ef;
+    --surface:       #ffffff;
+    --surface2:      #f0ede7;
+    --surface3:      #e8e4dc;
+    --border:        #ddd9d0;
+    --border2:       #ccc8be;
+    --text:          #1a1814;
+    --text-mid:      #5e5a52;
+    --text-muted:    #9a9488;
+    --accent:        #c8602a;
+    --accent-dim:    rgba(200,96,42,0.1);
+    --accent-hover:  #a84e20;
+    --danger:        #c0392b;
+    --danger-dim:    rgba(192,57,43,0.08);
+    --warn:          #c9860d;
+    --warn-dim:      rgba(201,134,13,0.08);
+    --success:       #2e8b57;
+    --success-dim:   rgba(46,139,87,0.08);
+    --glow:          0 0 0 1px rgba(200,96,42,0.25), 0 4px 20px rgba(200,96,42,0.06);
+  }
+
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
@@ -731,6 +753,7 @@
 
     <div class="header-actions">
       <a class="icon-btn" id="sheetsLink" href="#" target="_blank" title="Open Google Sheet" style="display:none">📊</a>
+      <button class="icon-btn" id="themeToggle" title="Toggle light/dark mode" aria-label="Toggle theme">🌙</button>
       <button class="icon-btn" id="openSettingsBtn" title="Settings">⚙</button>
     </div>
   </div>
@@ -1725,6 +1748,34 @@
 
   // Initial summary update
   updateSummary();
+
+  // ── Theme toggle ────────────────────────────────────
+  (function() {
+    const THEME_KEY = 'tally_theme';
+    const btn = document.getElementById('themeToggle');
+    const root = document.documentElement;
+
+    function applyTheme(theme) {
+      if (theme === 'light') {
+        root.setAttribute('data-theme', 'light');
+        btn.textContent = '🌑';
+        btn.title = 'Switch to dark mode';
+      } else {
+        root.removeAttribute('data-theme');
+        btn.textContent = '🌙';
+        btn.title = 'Switch to light mode';
+      }
+      localStorage.setItem(THEME_KEY, theme);
+    }
+
+    // Load saved preference, fallback to dark
+    applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
+
+    btn.addEventListener('click', () => {
+      const current = root.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+      applyTheme(current === 'light' ? 'dark' : 'light');
+    });
+  })();
 
 </script>
 </body>
